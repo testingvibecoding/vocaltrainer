@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>练声音准 · Vocal Pitch Trainer</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c2330; --line:#2a3340;
+    --text:#e6edf3; --muted:#8b98a8; --accent:#4cc2ff; --accent2:#ffd166;
+    --good:#3fb950; --bad:#f85149; --warn:#d29922;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif;
+    overscroll-behavior:none;}
+  body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
+  header{padding:10px 14px 6px;}
+  header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.3px;}
+  header .sub{font-size:11px;color:var(--muted);margin-top:2px;}
+  #status{font-size:11px;color:var(--muted);margin-top:4px;min-height:14px;}
+  #status.err{color:var(--bad);}
+  #status.ok{color:var(--good);}
+
+  .canvasWrap{position:relative;margin:6px 8px;border-radius:12px;overflow:hidden;
+    background:var(--panel);border:1px solid var(--line);}
+  canvas{display:block;width:100%;height:auto;touch-action:none;}
+  #readout{display:flex;align-items:center;justify-content:center;gap:18px;
+    margin:6px 10px 2px;font-variant-numeric:tabular-nums;font-size:13px;}
+  #readout b{font-size:20px;}
+  .rline{display:flex;align-items:center;gap:6px;line-height:1.2;}
+  .rlabel{font-size:11px;color:var(--muted);}
+  #refNote{color:var(--accent);display:inline-block;min-width:44px;}    /* 标准音：蓝 */
+  #noteName{color:var(--good);display:inline-block;min-width:44px;}     /* 收音：绿 */
+  #centsBadge{display:inline-block;min-width:54px;text-align:center;padding:1px 6px;
+    border-radius:6px;margin-left:6px;font-size:12px;background:#222b36;color:var(--muted);}
+  #phaseLabel{position:absolute;top:8px;right:10px;font-size:12px;font-weight:600;
+    padding:5px 10px;border-radius:8px;background:rgba(13,17,23,.55);backdrop-filter:blur(4px);
+    pointer-events:none;display:none;}
+  #scoreLabel{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    text-align:center;pointer-events:none;display:none;opacity:.88;
+    text-shadow:0 2px 16px rgba(0,0,0,.8);}
+  .scoreCap{font-size:14px;font-weight:600;color:var(--muted);letter-spacing:3px;}
+  .scoreBig{font-size:72px;font-weight:800;line-height:1.05;}
+  .scoreUnit{font-size:24px;font-weight:600;margin-left:4px;}
+
+  .controls{padding:6px 12px 16px;display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;}
+  .full{grid-column:1 / -1;}
+  label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;}
+  select,input[type=range]{width:100%;}
+  select{background:var(--panel2);color:var(--text);border:1px solid var(--line);
+    border-radius:9px;padding:9px 8px;font-size:14px;-webkit-appearance:none;appearance:none;}
+  .rangeRow{display:flex;align-items:center;gap:8px;}
+  .rangeRow output{font-size:13px;color:var(--text);min-width:46px;text-align:right;
+    font-variant-numeric:tabular-nums;}
+  input[type=range]{accent-color:var(--accent);height:28px;}
+  .btnRow{display:flex;gap:10px;}
+  button{flex:1;border:none;border-radius:11px;padding:14px 10px;font-size:15px;font-weight:600;
+    color:#06121f;background:var(--accent);transition:filter .1s;}
+  button:active{filter:brightness(.85);}
+  button.sec{background:var(--panel2);color:var(--text);border:1px solid var(--line);}
+  button.on{background:var(--good);color:#06121f;}
+  button.rec{background:var(--bad);color:#fff;}
+  button:disabled{opacity:.4;}
+  .toggleRow{display:flex;gap:8px;flex-wrap:wrap;}
+  .toggleRow.disabled{opacity:.35;pointer-events:none;}
+  .stepper{display:flex;align-items:center;gap:12px;}
+  .stepBtn{flex:0 0 auto;width:44px;height:42px;border-radius:11px;background:var(--panel2);
+    color:var(--text);border:1px solid var(--line);font-size:22px;font-weight:700;padding:0;line-height:1;}
+  .stepper output{font-size:19px;min-width:30px;text-align:center;font-variant-numeric:tabular-nums;}
+  .chip{font-size:12px;padding:6px 10px;border-radius:20px;background:var(--panel2);
+    border:1px solid var(--line);color:var(--muted);}
+  .chip.active{background:var(--accent);color:#06121f;border-color:var(--accent);}
+  .hint{grid-column:1/-1;font-size:11px;color:var(--muted);line-height:1.5;
+    background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:8px 10px;}
+  details{grid-column:1/-1;font-size:12px;color:var(--muted);}
+  summary{cursor:pointer;padding:4px 0;color:var(--accent);}
+  details p{line-height:1.6;}
+</style>
+</head>
+<body>
+<header>
+  <h1>练声音准 · Vocal Pitch Trainer</h1>
+  <div class="sub">选择练声音型 → 播放参考音 → 跟唱，实时看自己的音准</div>
+  <div class="toggleRow" id="devToggle" style="margin-top:8px;">
+    <span class="chip" id="devComputer">💻 电脑</span>
+    <span class="chip active" id="devPhone">📱 手机</span>
+  </div>
+  <div id="status">点击「播放」开始（首次会请求麦克风权限）</div>
+</header>
+
+<div id="readout">
+  <span class="rline"><span class="rlabel">标准音</span><b id="refNote">—</b></span>
+  <span class="rline"><span class="rlabel">收音</span><b id="noteName">—</b></span>
+  <span class="rline"><span class="rlabel">准确度</span><span id="centsBadge">—</span></span>
+</div>
+<div class="canvasWrap">
+  <canvas id="roll"></canvas>
+  <div id="phaseLabel"></div>
+  <div id="scoreLabel"></div>
+</div>
+
+<div class="controls">
+  <div>
+    <label>起始音（根音）</label>
+    <select id="rootSel"></select>
+  </div>
+  <div>
+    <label>练习音型</label>
+    <select id="patternSel"></select>
+  </div>
+
+  <div>
+    <label>速度 <span class="muted" id="bpmLabel"></span></label>
+    <div class="rangeRow">
+      <input type="range" id="bpm" min="50" max="200" value="100" step="2">
+      <output id="bpmOut">100</output>
+    </div>
+  </div>
+  <div>
+    <label>音色</label>
+    <select id="waveSel">
+      <option value="piano" selected>钢琴</option>
+      <option value="violin">电子</option>
+    </select>
+  </div>
+
+  <div>
+    <label>向上移调次数</label>
+    <div class="stepper">
+      <button type="button" class="stepBtn" id="upMinus">−</button>
+      <output id="upOut">0</output>
+      <button type="button" class="stepBtn" id="upPlus">+</button>
+    </div>
+  </div>
+  <div>
+    <label>每次移调</label>
+    <div class="toggleRow" id="stepGroup">
+      <span class="chip active" id="stepSemiBtn">半音</span>
+      <span class="chip" id="stepWholeBtn">全音</span>
+    </div>
+  </div>
+
+  <div class="full">
+    <label>练习模式</label>
+    <div class="toggleRow">
+      <span class="chip active" id="chipRealtime">实时跟唱 · 重复2次</span>
+      <span class="chip" id="chipListen">先听后唱 · 听1遍唱1遍</span>
+    </div>
+  </div>
+
+  <div class="full">
+    <label>显示</label>
+    <div class="toggleRow">
+      <span class="chip active" id="chipGuide">显示参考条</span>
+    </div>
+  </div>
+
+  <div class="full btnRow">
+    <button id="playBtn">▶︎ 播放</button>
+    <button id="micBtn" class="sec">🎤 麦克风停用中</button>
+  </div>
+
+  <div class="hint" id="micHint"></div>
+
+  <details>
+    <summary>关于音准检测与离线使用</summary>
+    <p>背景的彩色横条是参考音高（piano-roll）。开启麦克风后，你跟唱的实时音高会以亮色曲线叠加在上面——曲线压在横条中线说明音准。右上角显示当前音名与偏差音分（cents，0 最准；正数偏高、负数偏低）。<br><br>
+    iOS Safari 出于安全要求，麦克风只能在 <b>HTTPS 网址</b> 下使用。如果你是用「文件」App 直接打开本文件（file://），播放和画图正常，但麦克风会被拒绝。把本文件传到一个免费 HTTPS 托管后，用 Safari 打开网址即可，加载后可离线、可「添加到主屏幕」当 App 用。具体托管方法见随附说明。</p>
+  </details>
+</div>
+
+<script>
+"use strict";
+/* ============ 音名 / 频率工具 ============ */
+const A4 = 440;
+const NOTE_NAMES = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+function midiToFreq(m){ return A4 * Math.pow(2,(m-69)/12); }
+function freqToMidiFloat(f){ return 69 + 12*Math.log2(f/A4); }
+function midiToName(m){ const r=Math.round(m); return NOTE_NAMES[((r%12)+12)%12] + (Math.floor(r/12)-1); }
+
+/* ============ 练习音型（半音相对根音的序列）============ */
+/* 每个音 = 根音 + 半音偏移。上行模式末尾自动加返回（如开启）。 */
+const PATTERNS = {
+  octave_hold:  { name:"八度延长 (上行→顶音4拍→下行→底音4拍)",
+                  up:[0,2,4,5,7,9,11,[12,4]],
+                  turn:[0,2,4,5,7,9,11,[12,4],12,11,9,7,5,4,2,[0,4]] },
+  fifth_hold:   { name:"五度延长 (上行→5音4拍→下行→1音4拍)",
+                  up:[0,2,4,5,[7,4]],
+                  turn:[0,2,4,5,[7,4],7,5,4,2,[0,4]] },
+  rossini:      { name:"罗西尼音阶 (1-3-5-8-10-12 上下行)", up:[0,4,7,12,16,19], turn:[0,4,7,12,16,19,17,14,11,7,5,2,0] },
+  five_scale:   { name:"五度音阶 (Do-Re-Mi-Fa-Sol)", up:[0,2,4,5,7], turn:[0,2,4,5,7,5,4,2,0] },
+  triad:        { name:"三和弦琶音 (Do-Mi-Sol)",       up:[0,4,7],     turn:[0,4,7,4,0] },
+  octave_arp:   { name:"八度琶音 (Do-Mi-Sol-Do')",     up:[0,4,7,12],  turn:[0,4,7,12,7,4,0] },
+  thirds:       { name:"三度模进 (Do-Mi Re-Fa…)",      up:[0,4,2,5,4,7], turn:[0,4,2,5,4,7,5,9,7,5,4,2,0] },
+  fifth_jump:   { name:"五度跳音 (Do-Sol-Do)",         up:[0,7,0],     turn:[0,7,0] },
+  octave_jump:  { name:"八度跳音 (Do-Do')",            up:[0,12,0],    turn:[0,12,0] },
+  major_full:   { name:"完整大音阶 (Do…Do')",          up:[0,2,4,5,7,9,11,12], turn:[0,2,4,5,7,9,11,12,11,9,7,5,4,2,0] },
+  five_tone:    { name:"五声音阶 (宫商角徵羽)",         up:[0,2,4,7,9],  turn:[0,2,4,7,9,12,9,7,4,2,0] },
+  nine_tone:    { name:"九连音阶 (1-2-3-4-5-4-3-2-1)",  up:[0,2,4,5,7],  turn:[0,2,4,5,7,5,4,2,0] },
+  messa:        { name:"长音 / 渐强渐弱 (持续音)",      up:[0],          turn:[0,0,0,0] },
+  semitone:     { name:"半音阶 (上下半音)",             up:[0,1,2,1],    turn:[0,1,2,1,0] }
+};
+
+/* ============ DOM ============ */
+const $ = id => document.getElementById(id);
+const rootSel=$("rootSel"), patternSel=$("patternSel"), bpm=$("bpm"), bpmOut=$("bpmOut"),
+      waveSel=$("waveSel"), upOut=$("upOut"), upMinus=$("upMinus"), upPlus=$("upPlus"),
+      stepGroup=$("stepGroup"), stepSemiBtn=$("stepSemiBtn"), stepWholeBtn=$("stepWholeBtn"),
+      playBtn=$("playBtn"), micBtn=$("micBtn"), statusEl=$("status"), micHint=$("micHint"),
+      noteNameEl=$("noteName"), refNoteEl=$("refNote"), centsBadge=$("centsBadge"), phaseLabel=$("phaseLabel"), scoreLabel=$("scoreLabel"),
+      chipGuide=$("chipGuide"),
+      chipRealtime=$("chipRealtime"), chipListen=$("chipListen"),
+      devComputer=$("devComputer"), devPhone=$("devPhone");
+
+// 填充根音下拉 (C2..C5)
+for(let m=36;m<=72;m++){
+  const o=document.createElement("option"); o.value=m; o.textContent=midiToName(m);
+  if(m===48) o.selected=true; // C3
+  rootSel.appendChild(o);
+}
+// 填充音型下拉
+for(const k in PATTERNS){
+  const o=document.createElement("option"); o.value=k; o.textContent=PATTERNS[k].name;
+  patternSel.appendChild(o);
+}
+patternSel.value="octave_hold";
+
+let mode="realtime"; // "realtime" 实时跟唱 | "listen" 先听后唱
+let showGuide=true;  // 参考条显示开关（纯视觉，随时切换不影响进行中的练习）
+
+// 设备切换：手机=高灵敏（放大5x、低门限）；电脑=之前的保守设定（不放大、高门限）。默认手机
+function setDevice(m){
+  deviceMode=m;
+  devPhone.classList.toggle("active", m==="phone");
+  devComputer.classList.toggle("active", m==="computer");
+  if(micGainNode) micGainNode.gain.value = (m==="phone") ? 5 : 1;   // 麦克风开着时即时生效
+}
+devComputer.onclick=()=>setDevice("computer");
+devPhone.onclick=()=>setDevice("phone");
+
+// 模式切换：两种模式时间轴完全一致，只是“第2遍是否出声/条形颜色”不同。
+// 因此播放途中切换可无缝进行——保留当前正在发声的音，仅按新模式重排未来音频并改条色。
+function setMode(m){
+  mode=m;
+  chipRealtime.classList.toggle("active", m==="realtime");
+  chipListen.classList.toggle("active", m==="listen");
+  noteRef=null; noteSamples=0; noteAcc=0;
+  repSum=0; repW=0; repMicFrames=0; repTotalFrames=0; curRepKey=null;   // 切换模式重置评分
+  if(isPlaying){ seqData=buildSequence(); reschedFutureAudio(); }
+  else refreshSeqView();
+}
+chipRealtime.onclick=()=>setMode("realtime");
+chipListen.onclick=()=>setMode("listen");
+
+chipGuide.onclick=()=>{ showGuide=!showGuide; chipGuide.classList.toggle("active",showGuide); draw(); };
+bpm.oninput=()=>bpmOut.value=bpm.value;
+
+// 向上移调次数（+/- 按钮，默认 0，范围 0–12）
+let upCount=0;
+const UP_MAX=12;
+function setUpCount(n){
+  upCount=Math.max(0,Math.min(UP_MAX,n));
+  upOut.value=upCount;
+  upMinus.disabled = upCount<=0;
+  upPlus.disabled  = upCount>=UP_MAX;
+  stepGroup.classList.toggle("disabled", upCount===0);  // 不移调时灰掉“每次移调”
+  refreshSeqView();
+}
+upMinus.onclick=()=>setUpCount(upCount-1);
+upPlus.onclick =()=>setUpCount(upCount+1);
+
+// 每次移调：半音(1) / 全音(2)
+let stepSemiVal=1;
+function setStep(v){
+  stepSemiVal=v;
+  stepSemiBtn.classList.toggle("active", v===1);
+  stepWholeBtn.classList.toggle("active", v===2);
+  refreshSeqView();
+}
+stepSemiBtn.onclick=()=>setStep(1);
+stepWholeBtn.onclick=()=>setStep(2);
+
+/* ============ 构建完整事件序列 ============ */
+// 返回 {events:[{midi,t,dur}], minMidi, maxMidi, total}
+function buildSequence(){
+  const root=+rootSel.value;
+  const pat=PATTERNS[patternSel.value];
+  const seq = pat.turn || pat.up;   // 始终播放完整音型（含下行返回）
+  const ups = upCount, st=stepSemiVal;
+  const beat = 60/(+bpm.value);          // 每拍时长（秒）
+  const phraseGap = beat*0.8;            // 转调乐句之间停顿
+  const repGap = beat*0.5;               // 同一调内两遍之间停顿
+  // 每个转调播两遍：实时跟唱=两遍都出声；先听后唱=第1遍出声(听)、第2遍静音(看图自己唱)
+  const repsAudible = (mode==="listen") ? [true,false] : [true,true];
+  let t=0; const events=[]; let minM=999,maxM=-999;
+  for(let i=0;i<=ups;i++){
+    const base = root + i*st;
+    for(let r=0;r<repsAudible.length;r++){
+      const audible=repsAudible[r];
+      for(let n=0;n<seq.length;n++){
+        // 每个音可以是数字(1拍)或 [半音, 拍数] 以支持延长音
+        const step=seq[n];
+        const semi = Array.isArray(step)? step[0] : step;
+        const beats = Array.isArray(step)? step[1] : 1;
+        const midi=base+semi;
+        events.push({midi,t,dur:beat*beats*0.92,audible,tIdx:i,rep:r});
+        minM=Math.min(minM,midi); maxM=Math.max(maxM,midi);
+        t+=beat*beats;
+      }
+      t += (r<repsAudible.length-1) ? repGap : phraseGap;
+    }
+  }
+  return {events, minMidi:minM, maxMidi:maxM, total:t};
+}
+
+/* ============ 音频 ============ */
+let audioCtx=null, masterGain=null, seqGain=null;
+let isPlaying=false, startTime=0, seqData=null, scheduledStop=0;
+let activeOscs=[];   // 已调度但仍在排队/播放的振荡器，停止时逐个关闭
+
+function ensureAudio(){
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value=0.18;
+    masterGain.connect(audioCtx.destination);
+  }
+  if(audioCtx.state==="suspended") audioCtx.resume();
+}
+
+// 乐器音色：用谐波叠加(PeriodicWave)近似，配合不同包络
+const INSTRUMENTS = {
+  piano:      { harmonics:[0,1,0.7,0.5,0.35,0.25,0.18,0.13,0.1,0.07], attack:0.005, decay:true  },
+  electronic: { type:"square", attack:0.005, decay:false },
+  organ:      { harmonics:[0,1,0.5,0.85,0.45,0.4,0.3,0.25,0.2,0.15], attack:0.01, decay:false },
+  flute:      { harmonics:[0,1,0.18,0.05,0.02],                        attack:0.06, decay:false },
+  violin:     { harmonics:[0,1,0.6,0.45,0.35,0.28,0.22,0.18,0.15,0.12,0.1], attack:0.04, decay:false }
+};
+const waveCache={};
+function getWave(name,harmonics){
+  if(name in waveCache) return waveCache[name];
+  let w=null;
+  try{
+    const real=new Float32Array(harmonics.length);
+    const imag=Float32Array.from(harmonics);
+    w=audioCtx.createPeriodicWave(real,imag);   // 不传可选参数，兼容更多 iOS 版本
+  }catch(e){ w=null; }                           // 失败则回退到内置波形
+  waveCache[name]=w; return w;
+}
+function scheduleNote(midi, when, dur, inst){
+  const cfg=INSTRUMENTS[inst]||INSTRUMENTS.piano;
+  const osc=audioCtx.createOscillator();
+  const g=audioCtx.createGain();
+  if(cfg.type) osc.type=cfg.type;
+  else {
+    const w=getWave(inst,cfg.harmonics);
+    if(w) osc.setPeriodicWave(w);
+    else osc.type = (inst==="piano") ? "triangle" : "sawtooth";   // 自定义波形不可用时的回退音色
+  }
+  osc.frequency.value=midiToFreq(midi);
+  const a=cfg.attack;
+  g.gain.setValueAtTime(0.0001, when);
+  g.gain.exponentialRampToValueAtTime(1, when+a);                       // 起音
+  if(cfg.decay){                                                        // 钢琴：起音后逐渐衰减
+    g.gain.exponentialRampToValueAtTime(0.28, when+Math.min(dur-0.04, a+0.55));
+    g.gain.exponentialRampToValueAtTime(0.0001, when+dur);
+  }else{                                                                // 管风琴/长笛/小提琴/电子：持续
+    const r=Math.min(0.08,dur*0.3);
+    g.gain.setValueAtTime(1, when+Math.max(a,dur-r));
+    g.gain.exponentialRampToValueAtTime(0.0001, when+dur);
+  }
+  osc.connect(g); g.connect(seqGain);
+  osc.start(when); osc.stop(when+dur+0.05);
+  const item={osc,t0:when,t1:when+dur};
+  activeOscs.push(item);
+  osc.onended=()=>{ const i=activeOscs.indexOf(item); if(i>=0) activeOscs.splice(i,1); };
+}
+
+// 立刻让所有正在排队/播放的声音停下
+function killAllNotes(){
+  const now=audioCtx?audioCtx.currentTime:0;
+  if(seqGain){
+    try{ seqGain.gain.cancelScheduledValues(now);
+         seqGain.gain.setValueAtTime(0,now); }catch(e){}
+  }
+  for(const it of activeOscs.slice()){
+    try{ it.osc.onended=null; it.osc.stop(now); it.osc.disconnect(); }catch(e){}
+  }
+  activeOscs=[];
+}
+
+// 模式切换时无缝重排音频：保留正在发声的当前音，只改未来音符
+function reschedFutureAudio(){
+  if(!audioCtx || !isPlaying || !seqGain) return;
+  const now=audioCtx.currentTime;
+  for(const it of activeOscs.slice()){            // 移除尚未开始的已排程音
+    if(it.t0 > now+0.005){
+      try{ it.osc.onended=null; it.osc.stop(now); it.osc.disconnect(); }catch(e){}
+      const i=activeOscs.indexOf(it); if(i>=0) activeOscs.splice(i,1);
+    }
+  }
+  const wave=waveSel.value;                        // 按新模式补排未来的有声音符
+  for(const e of seqData.events){
+    const when=startTime+e.t;
+    if(e.audible && when > now+0.005) scheduleNote(e.midi, when, e.dur, wave);
+  }
+}
+
+function startPlay(){
+  ensureAudio();
+  killAllNotes();                       // 清掉上一轮残留
+  seqGain = audioCtx.createGain();      // 每次播放新建“总闸”节点，停止时直接归零
+  seqGain.gain.value=1;
+  seqGain.connect(masterGain);
+  seqData = buildSequence();
+  updateViewRange();                    // 起播即按当前音型适应音域
+  const wave=waveSel.value;
+  startTime = audioCtx.currentTime + 0.12;
+  for(const e of seqData.events){
+    if(e.audible) scheduleNote(e.midi, startTime+e.t, e.dur, wave);  // 静音遍只走图形
+  }
+  scheduledStop = startTime + seqData.total;
+  isPlaying=true;
+  roundId=0; noteRef=null; noteSamples=0; noteAcc=0;
+  repSum=0; repW=0; repMicFrames=0; repTotalFrames=0; curRepKey=null;   // 重置评分
+  scoreLabel.style.display="none";
+  playBtn.textContent="■ 停止"; playBtn.classList.add("rec");
+  setStatus("播放中…跟着唱", "ok");
+  loopRAF();
+}
+
+function stopPlay(){
+  isPlaying=false;
+  killAllNotes();                       // 立即静音并销毁所有已调度音符
+  playBtn.textContent="▶︎ 播放"; playBtn.classList.remove("rec");
+  setStatus(micOn?"麦克风已开，可继续练":"已停止");
+}
+
+playBtn.onclick=()=>{ isPlaying?stopPlay():startPlay(); };
+
+function setStatus(msg,cls){ statusEl.textContent=msg; statusEl.className=cls||""; }
+
+/* ============ 麦克风 + 音高检测 ============ */
+let micOn=false, analyser=null, micStream=null, floatBuf=null, micGainNode=null;
+let deviceMode="phone";   // "phone"=高灵敏（手机）| "computer"=之前的保守设定（电脑）
+let pitchHistory=[]; // {t(秒,相对audioCtx.currentTime记录时), midi}
+let micReadoutCtr=0; // 用于降低收音读数的刷新频率
+let silentFrames=0;  // 连续无信号帧数，用于无输入时清空读数
+// 评分：按“音”计分。每个音若有≥1/2采样落在“准”范围即满分；分段=跟唱整轮 / 先听后唱每个“唱”遍
+let roundId=0;                                              // 仅用于区分循环中各遍的 key
+let noteRef=null, noteSamples=0, noteAcc=0;                  // 当前音的采样统计
+let repSum=0, repW=0, repMicFrames=0, repTotalFrames=0, curRepKey=null;  // 当前“一条音阶”的缓冲与发声覆盖率
+
+micBtn.onclick=async()=>{
+  if(micOn){ stopMic(); return; }
+  try{
+    ensureAudio();
+    if(!window.isSecureContext && location.protocol!=="https:" && location.hostname!=="localhost"){
+      // 仍尝试，但提示
+    }
+    micStream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+    const src=audioCtx.createMediaStreamSource(micStream);
+    micGainNode=audioCtx.createGain();
+    micGainNode.gain.value = (deviceMode==="phone") ? 5 : 1;   // 手机放大 / 电脑不放大
+    analyser=audioCtx.createAnalyser();
+    analyser.fftSize=2048;
+    floatBuf=new Float32Array(analyser.fftSize);
+    src.connect(micGainNode); micGainNode.connect(analyser); // 经放大后接入分析器；不连 destination，避免回授
+    // iOS 开录音后常把音频上下文挂起/改路由→主动重新唤醒，尽量找回播放声音
+    try{ await audioCtx.resume(); }catch(e){}
+    setTimeout(()=>{ if(audioCtx && audioCtx.state!=="running") audioCtx.resume().catch(()=>{}); }, 300);
+    micOn=true; micBtn.classList.add("on"); micBtn.textContent="🎤 麦克风使用中";
+    setStatus("麦克风已开 — 唱一个长音试试","ok");
+    loopRAF();
+  }catch(err){
+    micOn=false; micBtn.classList.remove("on");
+    if(location.protocol==="file:"){
+      setStatus("麦克风不可用：iOS 不允许本地文件(file://)访问麦克风，请用 HTTPS 网址打开（见下方说明）","err");
+    }else{
+      setStatus("无法访问麦克风："+err.name+" — 请在 Safari 设置中允许麦克风权限","err");
+    }
+  }
+};
+
+function stopMic(){
+  micOn=false; micBtn.classList.remove("on"); micBtn.textContent="🎤 麦克风停用中";
+  if(micStream){ micStream.getTracks().forEach(t=>t.stop()); micStream=null; }
+  analyser=null; pitchHistory=[];
+  noteNameEl.textContent="—"; centsBadge.textContent="—"; centsBadge.style.background="#222b36"; centsBadge.style.color="var(--muted)";
+  setStatus(isPlaying?"播放中…":"已停止");
+}
+
+// 自相关音高检测 (ACF2+ 简化版)
+function detectPitch(buf, sampleRate){
+  const N=buf.length;
+  let rms=0; for(let i=0;i<N;i++){ rms+=buf[i]*buf[i]; }
+  rms=Math.sqrt(rms/N);
+  const gate = (deviceMode==="phone") ? 0.0035 : 0.01;   // 手机灵敏 / 电脑较保守
+  if(rms<gate) return -1;
+  let r1=0,r2=N-1,thres = (deviceMode==="phone") ? 0.1 : 0.2;
+  for(let i=0;i<N/2;i++){ if(Math.abs(buf[i])<thres){r1=i;break;} }
+  for(let i=1;i<N/2;i++){ if(Math.abs(buf[N-i])<thres){r2=N-i;break;} }
+  const b=buf.slice(r1,r2); const M=b.length;
+  const c=new Float32Array(M).fill(0);
+  for(let lag=0;lag<M;lag++){ for(let i=0;i<M-lag;i++){ c[lag]+=b[i]*b[i+lag]; } }
+  let d=0; while(d<M-1 && c[d]>c[d+1]) d++;
+  let maxv=-1,maxp=-1;
+  for(let i=d;i<M;i++){ if(c[i]>maxv){maxv=c[i];maxp=i;} }
+  if(maxp<=0) return -1;
+  // 抛物线插值
+  let T0=maxp;
+  const x1=c[maxp-1]||0, x2=c[maxp], x3=c[maxp+1]||0;
+  const a=(x1+x3-2*x2)/2, bb=(x3-x1)/2;
+  if(a) T0 = maxp - bb/(2*a);
+  const freq=sampleRate/T0;
+  if(freq<60||freq>1200) return -1;
+  return freq;
+}
+
+/* ============ 渲染 (piano-roll 滚动) ============ */
+const canvas=$("roll"), ctx=canvas.getContext("2d");
+let DPR=Math.min(window.devicePixelRatio||1,2);
+let CW=0,CH=0;
+const PX_PER_SEC=70;          // 时间→像素
+const PLAYHEAD_RATIO=0.32;    // 播放头位于画布的水平比例
+
+function resizeCanvas(){
+  const wrap=canvas.parentElement;
+  const w=wrap.clientWidth;
+  // 竖屏 iPhone 适配：画布约占视口高 38%，并限制上下限，避免过高挤压控件或过矮看不清
+  const h=Math.round(Math.min(360, Math.max(200, window.innerHeight*0.38)));
+  canvas.style.height=h+"px";
+  CW=w; CH=h;
+  canvas.width=Math.round(w*DPR); canvas.height=Math.round(h*DPR);
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  draw();
+}
+window.addEventListener("resize",resizeCanvas);
+
+// 音高范围（用于y轴），随当前序列+检测自适应，固定下来避免抖动
+let viewLo=48, viewHi=72;
+function updateViewRange(){
+  const s=seqData||buildSequence();
+  let lo=s.minMidi-2, hi=s.maxMidi+2;
+  if(hi-lo<14){ const mid=(hi+lo)/2; lo=mid-7; hi=mid+7; }
+  viewLo=lo; viewHi=hi;
+}
+function yForMidi(m){
+  const pad=12;
+  return pad + (CH-2*pad) * (1-(m-viewLo)/(viewHi-viewLo));
+}
+
+function draw(){
+  if(!CW) return;
+  if(!seqData) updateViewRange();
+  ctx.clearRect(0,0,CW,CH);
+  // 背景网格 + 音名
+  ctx.font="10px -apple-system,sans-serif";
+  for(let m=Math.ceil(viewLo);m<=Math.floor(viewHi);m++){
+    const y=yForMidi(m);
+    const isC = (((m%12)+12)%12)===0;
+    ctx.strokeStyle = isC ? "#33405a" : "#1e2530";
+    ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(34,y); ctx.lineTo(CW,y); ctx.stroke();
+    if(isC || (((m%12)+12)%12)===7){ // 标 C 和 G
+      ctx.fillStyle="#5a6b80"; ctx.fillText(midiToName(m), 4, y+3);
+    }
+  }
+  const playheadX = CW*PLAYHEAD_RATIO;
+  // 播放头竖线
+  ctx.strokeStyle="rgba(76,194,255,.5)"; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(playheadX,0); ctx.lineTo(playheadX,CH); ctx.stroke();
+
+  let elapsed = (isPlaying && audioCtx) ? (audioCtx.currentTime-startTime) : null;
+
+  // 参考音条
+  if(showGuide && seqData){
+    for(const e of seqData.events){
+      const t0 = (elapsed==null)? e.t : e.t;          // 序列时间
+      // x: 当 elapsed 给定时随时间滚动；未播放时静态显示全序列压缩到视图
+      let x, w;
+      if(elapsed!=null){
+        x = playheadX + (e.t - elapsed)*PX_PER_SEC;
+        w = e.dur*PX_PER_SEC;
+      }else{
+        const scale=(CW-44)/Math.max(seqData.total,1);
+        x = 40 + e.t*scale; w=Math.max(3,e.dur*scale);
+      }
+      if(x>CW||x+w<34) continue;
+      const y=yForMidi(e.midi);
+      const active = elapsed!=null && elapsed>=e.t && elapsed<=e.t+e.dur;
+      const bw=Math.max(w,3);
+      if(e.audible){                       // 有参考音：实心条
+        ctx.fillStyle = active ? "#ffd166" : "rgba(76,194,255,.32)";
+        roundRect(x,y-5,bw,10,3); ctx.fill();
+      }else{                               // 静音遍“该你唱”：空心条
+        roundRect(x,y-5,bw,10,3);
+        ctx.fillStyle = active ? "rgba(255,209,102,.30)" : "rgba(255,209,102,.10)";
+        ctx.fill();
+        ctx.lineWidth=1.5;
+        ctx.strokeStyle = active ? "#ffd166" : "rgba(255,209,102,.55)";
+        ctx.stroke();
+      }
+    }
+  }
+
+  // 阶段提示（听/唱）+ 当前“标准音”
+  if(elapsed!=null && seqData){
+    let cur=null;
+    for(const e of seqData.events){ if(elapsed>=e.t && elapsed<=e.t+e.dur){cur=e;break;} }
+    if(cur){
+      refNoteEl.textContent=midiToName(cur.midi);   // 标准音 = 当前参考条音高
+      if(cur.audible){ phaseLabel.textContent = (mode==="listen")?"🔊 先听":"🔊 跟唱";
+        phaseLabel.style.color="#4cc2ff"; }
+      else { phaseLabel.textContent="🎤 该你唱"; phaseLabel.style.color="#ffd166"; }
+      phaseLabel.style.display="block";
+    } else { refNoteEl.textContent="—"; }   // 音符/乐句间停顿：标准音留空，但相位提示保持不闪烁
+  } else { refNoteEl.textContent="—"; phaseLabel.style.display="none"; }   // 停止播放才隐藏
+
+  // 检测音高曲线：跟唱全程显示；先听后唱只在“唱”遍有记录点，故唱时可见
+  if(elapsed!=null) {
+    // 清理过旧历史
+    const minT=elapsed-(playheadX/PX_PER_SEC)-1;
+    pitchHistory=pitchHistory.filter(p=>p.t>=minT-0.5);
+    ctx.lineWidth=2.5; ctx.strokeStyle="#3fb950";
+    ctx.beginPath(); let started=false;
+    for(const p of pitchHistory){
+      const x = playheadX + (p.t - elapsed)*PX_PER_SEC;
+      if(x<34||x>CW){ started=false; continue; }
+      const y=yForMidi(p.midi);
+      if(!started){ ctx.moveTo(x,y); started=true; } else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    // 当前点
+    if(pitchHistory.length){
+      const last=pitchHistory[pitchHistory.length-1];
+      const x=playheadX, y=yForMidi(last.midi);
+      ctx.fillStyle="#3fb950"; ctx.beginPath(); ctx.arc(x,y,4,0,7); ctx.fill();
+    }
+  }
+}
+function roundRect(x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+}
+
+/* ============ 评分 ============ */
+function findCurEvent(elapsed){
+  if(!seqData) return null;
+  for(const e of seqData.events){ if(elapsed>=e.t && elapsed<=e.t+e.dur) return e; }
+  return null;
+}
+// 结算当前“音”→进入本条音阶缓冲：≥1/2采样为“准”即满分，完全错过=0分，均按时长加权
+function closeNote(){
+  if(noteRef){
+    let ns=0;
+    if(noteSamples>0){
+      const frac=noteAcc/noteSamples;
+      ns=Math.min(100, frac*200);       // 准占比≥50% → 100 分
+    }
+    const w=noteRef.dur;
+    repSum+=ns*w; repW+=w;
+  }
+  noteRef=null; noteSamples=0; noteAcc=0;
+}
+// 结算“一条音阶”（一个完整上下行音型，与移调无关）：满足条件即按各音时长加权算分并即时显示
+//  跟唱：该条 ≥2/3 时长检测到发声才算；先听后唱：仅“唱”遍算
+let scoreHideTimer=null;
+function finalizeRep(){
+  closeNote();                          // 先结算本条最后一个音
+  let count;
+  if(mode==="listen") count = repW>0;   // 唱遍的音才会进缓冲
+  else count = repTotalFrames>0 && (repMicFrames/repTotalFrames) >= (2/3);
+  if(count && repW>0){ showScore(Math.round(repSum/repW)); }
+  repSum=0; repW=0; repMicFrames=0; repTotalFrames=0;
+}
+function showScore(sc){
+  scoreLabel.innerHTML='<div class="scoreCap">得分</div><div class="scoreBig">'+sc+'<span class="scoreUnit">分</span></div>';
+  scoreLabel.style.color = sc>=90?"#3fb950":sc>=75?"#e0b020":sc>=60?"#ff9f43":"#f85149";
+  scoreLabel.style.display="block";
+  clearTimeout(scoreHideTimer);
+  scoreHideTimer=setTimeout(()=>{ scoreLabel.style.display="none"; }, 5000);  // 约5秒后隐藏
+}
+
+/* ============ 主循环 ============ */
+let rafId=null;
+function loopRAF(){
+  if(rafId) return;
+  const tick=()=>{
+    // 先做麦克风检测（评分、覆盖率、读数共用）
+    let f=-1, midi=null;
+    if(micOn && analyser){
+      analyser.getFloatTimeDomainData(floatBuf);
+      f=detectPitch(floatBuf, audioCtx.sampleRate);
+      if(f>0) midi=freqToMidiFloat(f);
+    }
+    const hasMic = f>0;
+
+    // 当前参考音 + 轮/遍边界 + 评分采样与发声覆盖率
+    let curEv=null;
+    if(isPlaying && audioCtx){
+      const elapsed=audioCtx.currentTime-startTime;
+      curEv=findCurEvent(elapsed);
+      // 仅当进入“另一条音阶（不同的一遍）”时才结算；音符间的小停顿(curEv=null)不触发
+      const rk = curEv ? (roundId+"|"+curEv.tIdx+"|"+curEv.rep) : null;
+      if(rk!==null && rk!==curRepKey){ finalizeRep(); curRepKey=rk; }
+      // 计分的音：跟唱=所有遍；先听后唱=仅“唱”遍（静音遍）
+      const scorable = curEv && (mode==="realtime" || !curEv.audible);
+      if(scorable){
+        if(curEv!==noteRef){ closeNote(); noteRef=curEv; }     // 换音→先结算上一个音
+        repTotalFrames++;                                      // 本遍音符时长（帧）
+        if(hasMic){
+          repMicFrames++;                                      // 其中检测到发声的帧
+          noteSamples++;
+          if(Math.abs(midi-curEv.midi)*100 <= 22) noteAcc++;   // 落在“准”范围
+        }
+      } else { closeNote(); }
+    }
+
+    // 收音读数 + 音高曲线
+    if(micOn && analyser){
+      if(hasMic){
+        const tNow = audioCtx.currentTime - (isPlaying?startTime:0);
+        // 曲线记录：跟唱全程；先听后唱仅在“唱”遍（静音遍）记录
+        if(isPlaying && (mode==="realtime" || (curEv && !curEv.audible))) pitchHistory.push({t:tNow, midi});
+        const justResumed = silentFrames>0;
+        silentFrames=0;
+        // 读数刷新频率：每 12 次检测才更新一次显示
+        if(justResumed || (++micReadoutCtr % 12)===0){
+          const nearest=Math.round(midi);
+          const cents=Math.round((midi-nearest)*100);
+          const ac=Math.abs(cents);
+          noteNameEl.textContent=midiToName(nearest);
+          let label,bg,col;
+          if(ac<=22){ label="准"; bg="#193d22"; col="#3fb950"; }          // 音准（范围略放宽）
+          else{
+            label = cents>0 ? "太高" : "太低";
+            if(ac<=38){ bg="#3b3416"; col="#e0b020"; }                    // 轻微（黄）
+            else if(ac<=60){ bg="#3d2a12"; col="#ff9f43"; }               // 较多（橙）
+            else{ bg="#3d1c1c"; col="#f85149"; }                          // 严重（红）
+          }
+          centsBadge.textContent=label;
+          centsBadge.style.background=bg;
+          centsBadge.style.color=col;
+        }
+      } else {
+        // 无输入信号：稍作防抖后清空收音读数与偏差
+        if(++silentFrames===6){
+          noteNameEl.textContent="—"; centsBadge.textContent="—";
+          centsBadge.style.background="#222b36"; centsBadge.style.color="var(--muted)";
+        }
+      }
+    }
+    // 整条练习走完后自动循环：回到原调从头开始（向上移调次数为0时即反复练当前调）
+    if(isPlaying && audioCtx && audioCtx.currentTime>scheduledStop){
+      finalizeRep();                  // 结算最后一条音阶
+      curRepKey=null; roundId++;
+      startTime = audioCtx.currentTime + 0.1;
+      const wave=waveSel.value;
+      for(const e of seqData.events){ if(e.audible) scheduleNote(e.midi, startTime+e.t, e.dur, wave); }
+      scheduledStop = startTime + seqData.total;
+      pitchHistory=[];
+    }
+    draw();
+    if(isPlaying||micOn){ rafId=requestAnimationFrame(tick); }
+    else{ rafId=null; draw(); }
+  };
+  rafId=requestAnimationFrame(tick);
+}
+
+/* ============ 序列变化时刷新视图 ============ */
+// 用当前 seqData 从头排程（保持播放状态）
+function scheduleAllFromNow(){
+  killAllNotes();
+  seqGain = audioCtx.createGain(); seqGain.gain.value=1; seqGain.connect(masterGain);
+  startTime = audioCtx.currentTime + 0.08;
+  const wave=waveSel.value;
+  for(const e of seqData.events){ if(e.audible) scheduleNote(e.midi, startTime+e.t, e.dur, wave); }
+  scheduledStop = startTime + seqData.total;
+  pitchHistory=[];
+  noteRef=null; noteSamples=0; noteAcc=0;
+  repSum=0; repW=0; repMicFrames=0; repTotalFrames=0; curRepKey=null;   // 换型/重排重置评分
+}
+
+// 音型/根音/速度/移调 改变：重建序列并自适应纵向音域；若正在播放则无缝从新音型开头继续
+function refreshSeqView(){
+  seqData=buildSequence();
+  updateViewRange();               // 自动适应新音型的最高/最低音，参考条不再被裁掉
+  if(isPlaying && audioCtx) scheduleAllFromNow();
+  draw();
+}
+[rootSel,patternSel,bpm].forEach(el=>el.addEventListener("change",refreshSeqView));
+
+/* ============ 初始 ============ */
+function initHint(){
+  if(location.protocol==="file:"){
+    micHint.innerHTML="⚠️ 你正用本地文件打开：演奏与画图可用，但 <b>iOS 不允许 file:// 访问麦克风</b>。把本文件传到免费 HTTPS（见上方「关于」），用 Safari 打开网址后麦克风即可用。";
+    micHint.style.color="var(--warn)";
+  }else if(window.isSecureContext){
+    micHint.innerHTML="✅ 安全上下文 (HTTPS)：麦克风可用。点「麦克风」授权后开始练。";
+    micHint.style.color="var(--good)";
+  }else{
+    micHint.innerHTML="⚠️ 当前非 HTTPS，麦克风可能被拒绝。请用 https:// 网址打开。";
+    micHint.style.color="var(--warn)";
+  }
+}
+bpmOut.value=bpm.value; setUpCount(0); setStep(1);
+initHint();
+seqData=buildSequence();   // 预先生成，静止时也显示参考条
+resizeCanvas();
+updateViewRange();
+draw();
+</script>
+</body>
+</html>
