@@ -45,6 +45,12 @@
   .scoreCap{font-size:14px;font-weight:600;color:var(--muted);letter-spacing:3px;}
   .scoreBig{font-size:72px;font-weight:800;line-height:1.05;}
   .scoreUnit{font-size:24px;font-weight:600;margin-left:4px;}
+  #infoLabel{position:absolute;top:6px;left:38px;right:84px;font-size:12px;font-weight:600;
+    color:var(--accent2);text-shadow:0 1px 6px rgba(0,0,0,.85);opacity:.92;
+    pointer-events:none;display:none;line-height:1.3;}
+  #rangeWarn{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);
+    font-size:12px;font-weight:600;color:#fff;background:rgba(248,81,73,.9);
+    padding:5px 12px;border-radius:8px;pointer-events:none;display:none;white-space:nowrap;}
 
   .controls{padding:6px 12px 16px;display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;}
   .full{grid-column:1 / -1;}
@@ -78,18 +84,62 @@
   details{grid-column:1/-1;font-size:12px;color:var(--muted);}
   summary{cursor:pointer;padding:4px 0;color:var(--accent);}
   details p{line-height:1.6;}
+  .topbar{padding:2px 12px 0;display:flex;flex-direction:column;gap:9px;}
+  .modeBlock label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;}
+  /* 播放/麦克风按钮条：滚动时始终吸顶 */
+  .stickyBar{position:sticky;top:0;z-index:40;background:var(--bg);
+    margin:0 -12px;padding:8px 12px;border-bottom:1px solid var(--line);}
 </style>
 </head>
 <body>
 <header>
   <h1>练声音准 · Vocal Pitch Trainer</h1>
   <div class="sub">选择练声音型 → 播放参考音 → 跟唱，实时看自己的音准</div>
-  <div class="toggleRow" id="devToggle" style="margin-top:8px;">
-    <span class="chip" id="devComputer">💻 电脑</span>
-    <span class="chip active" id="devPhone">📱 手机</span>
-  </div>
-  <div id="status">点击「播放」开始（首次会请求麦克风权限）</div>
 </header>
+
+<div class="topbar">
+  <div class="toggleRow" id="devToggle">
+    <span class="chip active" id="devPhone">📱 手机</span>
+    <span class="chip" id="devComputer">💻 电脑</span>
+  </div>
+
+  <div class="btnRow stickyBar">
+    <button id="playBtn">▶︎ 播放</button>
+    <button id="micBtn" class="sec">🎤 点击启用麦克风</button>
+  </div>
+
+  <div id="status">点击「播放」开始（首次会请求麦克风权限）</div>
+
+  <div class="modeBlock">
+    <label>模式</label>
+    <div class="toggleRow">
+      <span class="chip active" id="chipPractice">练习模式</span>
+      <span class="chip" id="chipRandom">🎲 随机测试</span>
+    </div>
+  </div>
+
+  <div class="modeBlock" id="subModeRow">
+    <label>练习方式</label>
+    <div class="toggleRow">
+      <span class="chip active" id="chipRealtime">实时跟唱 · 重复2次</span>
+      <span class="chip" id="chipListen">先听后唱 · 听1遍唱1遍</span>
+    </div>
+  </div>
+
+  <div class="modeBlock" id="catRow" style="display:none;">
+    <label>测试范围</label>
+    <div class="toggleRow">
+      <span class="chip" id="catChord">只考和弦</span>
+      <span class="chip" id="catMelody">只考旋律</span>
+      <span class="chip active" id="catBoth">综合</span>
+    </div>
+  </div>
+
+  <div class="modeBlock" id="voiceRow" style="display:none;">
+    <label>你的音域（安全音高范围 / 超出会提示）</label>
+    <select id="voiceSel"></select>
+  </div>
+</div>
 
 <div id="readout">
   <span class="rline"><span class="rlabel">标准音</span><b id="refNote">—</b></span>
@@ -98,18 +148,35 @@
 </div>
 <div class="canvasWrap">
   <canvas id="roll"></canvas>
+  <div id="infoLabel"></div>
   <div id="phaseLabel"></div>
   <div id="scoreLabel"></div>
+  <div id="rangeWarn">⚠ 此音超出你的安全音域</div>
 </div>
 
 <div class="controls">
-  <div>
+  <div class="practiceOnly">
     <label>起始音（根音）</label>
     <select id="rootSel"></select>
   </div>
-  <div>
+  <div class="practiceOnly">
     <label>练习音型</label>
     <select id="patternSel"></select>
+  </div>
+  <div class="practiceOnly">
+    <label>向上移调次数</label>
+    <div class="stepper">
+      <button type="button" class="stepBtn" id="upMinus">−</button>
+      <output id="upOut">0</output>
+      <button type="button" class="stepBtn" id="upPlus">+</button>
+    </div>
+  </div>
+  <div class="practiceOnly">
+    <label>每次移调</label>
+    <div class="toggleRow" id="stepGroup">
+      <span class="chip active" id="stepSemiBtn">半音</span>
+      <span class="chip" id="stepWholeBtn">全音</span>
+    </div>
   </div>
 
   <div>
@@ -127,30 +194,6 @@
     </select>
   </div>
 
-  <div>
-    <label>向上移调次数</label>
-    <div class="stepper">
-      <button type="button" class="stepBtn" id="upMinus">−</button>
-      <output id="upOut">0</output>
-      <button type="button" class="stepBtn" id="upPlus">+</button>
-    </div>
-  </div>
-  <div>
-    <label>每次移调</label>
-    <div class="toggleRow" id="stepGroup">
-      <span class="chip active" id="stepSemiBtn">半音</span>
-      <span class="chip" id="stepWholeBtn">全音</span>
-    </div>
-  </div>
-
-  <div class="full">
-    <label>练习模式</label>
-    <div class="toggleRow">
-      <span class="chip active" id="chipRealtime">实时跟唱 · 重复2次</span>
-      <span class="chip" id="chipListen">先听后唱 · 听1遍唱1遍</span>
-    </div>
-  </div>
-
   <div class="full">
     <label>显示</label>
     <div class="toggleRow">
@@ -158,16 +201,11 @@
     </div>
   </div>
 
-  <div class="full btnRow">
-    <button id="playBtn">▶︎ 播放</button>
-    <button id="micBtn" class="sec">🎤 麦克风停用中</button>
-  </div>
-
   <div class="hint" id="micHint"></div>
 
   <details>
     <summary>关于音准检测与离线使用</summary>
-    <p>背景的彩色横条是参考音高（piano-roll）。开启麦克风后，你跟唱的实时音高会以亮色曲线叠加在上面——曲线压在横条中线说明音准。右上角显示当前音名与偏差音分（cents，0 最准；正数偏高、负数偏低）。<br><br>
+    <p>背景的彩色横条是参考音高（piano-roll）。开启麦克风后，你跟唱的实时音高会以亮色曲线叠加在上面——曲线压在横条中线说明音准。上方显示标准音、收音音名与准确度。<br><br>
     iOS Safari 出于安全要求，麦克风只能在 <b>HTTPS 网址</b> 下使用。如果你是用「文件」App 直接打开本文件（file://），播放和画图正常，但麦克风会被拒绝。把本文件传到一个免费 HTTPS 托管后，用 Safari 打开网址即可，加载后可离线、可「添加到主屏幕」当 App 用。具体托管方法见随附说明。</p>
   </details>
 </div>
@@ -204,16 +242,60 @@ const PATTERNS = {
   semitone:     { name:"半音阶 (上下半音)",             up:[0,1,2,1],    turn:[0,1,2,1,0] }
 };
 
+/* ============ 音域（安全音域，MIDI 上下限，约为业余舒适范围）============ */
+const VOICE_RANGES = {
+  bass:  { name:"男低音 Bass (E2–D4)",       r:[40,62] },
+  bari:  { name:"男中音 Baritone (G2–F4)",   r:[43,65] },
+  ten2:  { name:"男次高音 (A2–G4)",          r:[45,67] },
+  tenor: { name:"男高音 Tenor (C3–C5)",      r:[48,72] },
+  mezzo: { name:"女中音 Mezzo (F3–F5)",      r:[53,77] },
+  sop2:  { name:"女次高音 (A3–A5)",          r:[57,81] },
+  sop:   { name:"女高音 Soprano (C4–C6)",    r:[60,84] }
+};
+
+/* ============ 随机测试用的短乐句（半音相对根音，每句≤8音）============
+   含音阶/分解和弦/世界名曲旋律片段 */
+const RANDOM_PHRASES = [
+  // —— 和弦类（含感情色彩）——
+  { name:"大三和弦", type:"chord", mood:"明亮、稳定、积极欢快", seq:[0,4,7,12,7,4,0] },
+  { name:"小三和弦", type:"chord", mood:"柔和、忧郁、伤感内省", seq:[0,3,7,12,7,3,0] },
+  { name:"属七和弦", type:"chord", mood:"紧张、有倾向性，渴望解决", seq:[0,4,7,10,7,4,0] },
+  { name:"大七和弦", type:"chord", mood:"温暖、梦幻、慵懒（爵士感）", seq:[0,4,7,11,7,4,0] },
+  { name:"小七和弦", type:"chord", mood:"柔和内敛、忧郁中带平静", seq:[0,3,7,10,7,3,0] },
+  { name:"减三和弦", type:"chord", mood:"不安、紧张、悬疑", seq:[0,3,6,3,0] },
+  { name:"增三和弦", type:"chord", mood:"神秘、悬浮、不安定（梦境感）", seq:[0,4,8,4,0] },
+  { name:"挂四和弦", type:"chord", mood:"悬而未决、开放、期待", seq:[0,5,7,5,0] },
+  { name:"大六和弦", type:"chord", mood:"明亮甜美、复古轻快", seq:[0,4,7,9,7,4,0] },
+  { name:"纯五度",   type:"chord", mood:"空旷、坚实、有力（无明暗倾向）", seq:[0,7,12,7,0] },
+  { name:"大三转位", type:"chord", mood:"明亮稳定（转位，色彩更柔）", seq:[4,7,12,7,4,0] },
+  // —— 旋律类（音阶基础 + 经典曲目，均有格调）——
+  { name:"大调音阶",   type:"melody", seq:[0,2,4,5,7] },
+  { name:"三度模进",   type:"melody", seq:[0,2,4,2,4,5,7] },
+  { name:"欢乐颂",      type:"melody", seq:[4,4,5,7,7,5,4,2] },          // 贝多芬《第九》
+  { name:"欢乐颂(下句)",type:"melody", seq:[0,0,2,4,4,2,2] },
+  { name:"致爱丽丝",    type:"melody", seq:[7,6,7,6,7,2,5,3] },          // 贝多芬 Für Elise
+  { name:"茉莉花",      type:"melody", seq:[4,4,7,9,12,12,9,7] },        // 中国民歌
+  { name:"卡农",        type:"melody", seq:[0,-1,-3,-5,-7,-8,-10,-12] }, // 帕赫贝尔 D大调卡农 低音线
+  { name:"绿袖子",      type:"melody", seq:[0,3,5,7,8,7,5,2] },          // Greensleeves（文艺复兴，小调）
+  { name:"红河谷",      type:"melody", seq:[-5,0,4,7,7,4,2,0] },         // Red River Valley
+  { name:"友谊地久天长",type:"melody", seq:[-5,0,0,4,2,0,4,7] }          // Auld Lang Syne
+];
+
 /* ============ DOM ============ */
 const $ = id => document.getElementById(id);
 const rootSel=$("rootSel"), patternSel=$("patternSel"), bpm=$("bpm"), bpmOut=$("bpmOut"),
       waveSel=$("waveSel"), upOut=$("upOut"), upMinus=$("upMinus"), upPlus=$("upPlus"),
       stepGroup=$("stepGroup"), stepSemiBtn=$("stepSemiBtn"), stepWholeBtn=$("stepWholeBtn"),
       playBtn=$("playBtn"), micBtn=$("micBtn"), statusEl=$("status"), micHint=$("micHint"),
-      noteNameEl=$("noteName"), refNoteEl=$("refNote"), centsBadge=$("centsBadge"), phaseLabel=$("phaseLabel"), scoreLabel=$("scoreLabel"),
+      noteNameEl=$("noteName"), refNoteEl=$("refNote"), centsBadge=$("centsBadge"), phaseLabel=$("phaseLabel"), scoreLabel=$("scoreLabel"), infoLabel=$("infoLabel"),
       chipGuide=$("chipGuide"),
-      chipRealtime=$("chipRealtime"), chipListen=$("chipListen"),
-      devComputer=$("devComputer"), devPhone=$("devPhone");
+      chipPractice=$("chipPractice"), subModeRow=$("subModeRow"),
+      chipRealtime=$("chipRealtime"), chipListen=$("chipListen"), chipRandom=$("chipRandom"),
+      practiceOnly=document.querySelectorAll(".practiceOnly"),
+      devComputer=$("devComputer"), devPhone=$("devPhone"),
+      voiceSel=$("voiceSel"), rangeWarn=$("rangeWarn"),
+      catRow=$("catRow"), voiceRow=$("voiceRow"),
+      catChord=$("catChord"), catMelody=$("catMelody"), catBoth=$("catBoth");
 
 // 填充根音下拉 (C2..C5)
 for(let m=36;m<=72;m++){
@@ -227,9 +309,47 @@ for(const k in PATTERNS){
   patternSel.appendChild(o);
 }
 patternSel.value="octave_hold";
+// 填充音域下拉
+for(const k in VOICE_RANGES){
+  const o=document.createElement("option"); o.value=k; o.textContent=VOICE_RANGES[k].name;
+  voiceSel.appendChild(o);
+}
+voiceSel.value="tenor";
+let voiceLo=48, voiceHi=72;
+function setVoice(){ const r=VOICE_RANGES[voiceSel.value].r; voiceLo=r[0]; voiceHi=r[1]; refreshSeqView(); }
+voiceSel.addEventListener("change", setVoice);
 
-let mode="realtime"; // "realtime" 实时跟唱 | "listen" 先听后唱
+let mode="realtime"; // "realtime" 实时跟唱 | "listen" 先听后唱（随机测试内部用 listen）
+let randomTest=false; // 默认练习模式
+let randPhrase=null;  // 当前随机乐句 {root, seq, name}
+let testCat="both";   // 测试范围："both"综合 | "chord"只考和弦 | "melody"只考旋律
 let showGuide=true;  // 参考条显示开关（纯视觉，随时切换不影响进行中的练习）
+
+// 随机乐句：按测试范围筛选，从音域内随机选根音 + 随机乐句，确保所有音在 [voiceLo,voiceHi] 内
+function makeRandomPhrase(){
+  let pool=RANDOM_PHRASES.filter(p => testCat==="both" || p.type===testCat);
+  if(!pool.length) pool=RANDOM_PHRASES.slice(); else pool=pool.slice();
+  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+  for(const p of pool){
+    const mn=Math.min(...p.seq), mx=Math.max(...p.seq);
+    const rLo=voiceLo-mn, rHi=voiceHi-mx;
+    if(rHi>=rLo){
+      const root=rLo+Math.floor(Math.random()*(rHi-rLo+1));
+      return {root, seq:p.seq, name:p.name, type:p.type, mood:p.mood};
+    }
+  }
+  return {root:voiceLo, seq:[0], name:"单音", type:"melody"};   // 兜底
+}
+function newRandomPhrase(){ randPhrase=makeRandomPhrase(); }
+// 随机测试：把曲名/和弦名与色彩透明叠印到参考条上方（不占额外空间）
+function updateInfoLabel(){
+  if(randomTest && randPhrase){
+    let s="🎲 "+randPhrase.name;
+    if(randPhrase.type==="chord" && randPhrase.mood) s+=" · "+randPhrase.mood;
+    infoLabel.textContent=s;
+    infoLabel.style.display="block";
+  } else infoLabel.style.display="none";
+}
 
 // 设备切换：手机=高灵敏（放大5x、低门限）；电脑=之前的保守设定（不放大、高门限）。默认手机
 function setDevice(m){
@@ -241,19 +361,50 @@ function setDevice(m){
 devComputer.onclick=()=>setDevice("computer");
 devPhone.onclick=()=>setDevice("phone");
 
-// 模式切换：两种模式时间轴完全一致，只是“第2遍是否出声/条形颜色”不同。
-// 因此播放途中切换可无缝进行——保留当前正在发声的音，仅按新模式重排未来音频并改条色。
+function resetScoring(){ noteRef=null; noteSamples=0; noteAcc=0; repSum=0; repW=0; repMicFrames=0; repTotalFrames=0; curRepKey=null; }
+
+// 顶层模式：练习模式 / 随机测试
+function setMainMode(main){
+  randomTest = (main==="random");
+  chipPractice.classList.toggle("active", main==="practice");
+  chipRandom.classList.toggle("active", main==="random");
+  subModeRow.style.display = randomTest ? "none" : "";   // 练习方式（实时/先听）仅练习模式
+  catRow.style.display     = randomTest ? "" : "none";   // 测试范围 仅随机测试
+  voiceRow.style.display   = "";                         // 音域：两种模式都先选择，并据此标出超音域的音
+  practiceOnly.forEach(el=>el.style.display = randomTest ? "none" : "");  // 起始音/音型/移调 仅练习模式
+  resetScoring();
+  if(randomTest){ mode="listen"; newRandomPhrase(); }
+  else { mode = chipListen.classList.contains("active") ? "listen" : "realtime"; }
+  updateInfoLabel();
+  if(isPlaying && !randomTest){ seqData=buildSequence(); reschedFutureAudio(); }
+  else refreshSeqView();
+}
+chipPractice.onclick=()=>setMainMode("practice");
+chipRandom.onclick=()=>setMainMode("random");
+
+// 练习方式（仅练习模式内）：实时跟唱 / 先听后唱，时间轴一致可无缝切换
 function setMode(m){
   mode=m;
   chipRealtime.classList.toggle("active", m==="realtime");
   chipListen.classList.toggle("active", m==="listen");
-  noteRef=null; noteSamples=0; noteAcc=0;
-  repSum=0; repW=0; repMicFrames=0; repTotalFrames=0; curRepKey=null;   // 切换模式重置评分
+  resetScoring();
   if(isPlaying){ seqData=buildSequence(); reschedFutureAudio(); }
   else refreshSeqView();
 }
 chipRealtime.onclick=()=>setMode("realtime");
 chipListen.onclick=()=>setMode("listen");
+
+// 测试范围：只考和弦 / 只考旋律 / 综合
+function setCat(c){
+  testCat=c;
+  catChord.classList.toggle("active", c==="chord");
+  catMelody.classList.toggle("active", c==="melody");
+  catBoth.classList.toggle("active", c==="both");
+  if(randomTest && !isPlaying){ newRandomPhrase(); updateInfoLabel(); refreshSeqView(); }  // 播放中则下一条生效
+}
+catChord.onclick=()=>setCat("chord");
+catMelody.onclick=()=>setCat("melody");
+catBoth.onclick=()=>setCat("both");
 
 chipGuide.onclick=()=>{ showGuide=!showGuide; chipGuide.classList.toggle("active",showGuide); draw(); };
 bpm.oninput=()=>bpmOut.value=bpm.value;
@@ -286,13 +437,20 @@ stepWholeBtn.onclick=()=>setStep(2);
 /* ============ 构建完整事件序列 ============ */
 // 返回 {events:[{midi,t,dur}], minMidi, maxMidi, total}
 function buildSequence(){
-  const root=+rootSel.value;
-  const pat=PATTERNS[patternSel.value];
-  const seq = pat.turn || pat.up;   // 始终播放完整音型（含下行返回）
-  const ups = upCount, st=stepSemiVal;
+  let root, seq, ups, st;
+  if(randomTest){
+    if(!randPhrase) newRandomPhrase();
+    root=randPhrase.root; seq=randPhrase.seq; ups=0; st=1;   // 单个随机乐句（听一遍唱一遍）
+  } else {
+    root=+rootSel.value;
+    const pat=PATTERNS[patternSel.value];
+    seq = pat.turn || pat.up;   // 始终播放完整音型（含下行返回）
+    ups = upCount; st=stepSemiVal;
+  }
   const beat = 60/(+bpm.value);          // 每拍时长（秒）
   const phraseGap = beat*0.8;            // 转调乐句之间停顿
-  const repGap = beat*0.5;               // 同一调内两遍之间停顿
+  // 同一调内两遍之间停顿；随机测试在示范与跟唱之间多留一拍反应时间
+  const repGap = beat*0.5 + (randomTest ? beat : 0);
   // 每个转调播两遍：实时跟唱=两遍都出声；先听后唱=第1遍出声(听)、第2遍静音(看图自己唱)
   const repsAudible = (mode==="listen") ? [true,false] : [true,true];
   let t=0; const events=[]; let minM=999,maxM=-999;
@@ -428,7 +586,8 @@ function startPlay(){
   repSum=0; repW=0; repMicFrames=0; repTotalFrames=0; curRepKey=null;   // 重置评分
   scoreLabel.style.display="none";
   playBtn.textContent="■ 停止"; playBtn.classList.add("rec");
-  setStatus("播放中…跟着唱", "ok");
+  updateInfoLabel();
+  setStatus(randomTest ? "" : "播放中…跟着唱", "ok");
   loopRAF();
 }
 
@@ -436,7 +595,7 @@ function stopPlay(){
   isPlaying=false;
   killAllNotes();                       // 立即静音并销毁所有已调度音符
   playBtn.textContent="▶︎ 播放"; playBtn.classList.remove("rec");
-  setStatus(micOn?"麦克风已开，可继续练":"已停止");
+  setStatus("");
 }
 
 playBtn.onclick=()=>{ isPlaying?stopPlay():startPlay(); };
@@ -486,7 +645,7 @@ micBtn.onclick=async()=>{
 };
 
 function stopMic(){
-  micOn=false; micBtn.classList.remove("on"); micBtn.textContent="🎤 麦克风停用中";
+  micOn=false; micBtn.classList.remove("on"); micBtn.textContent="🎤 点击启用麦克风";
   if(micStream){ micStream.getTracks().forEach(t=>t.stop()); micStream=null; }
   analyser=null; pitchHistory=[];
   noteNameEl.textContent="—"; centsBadge.textContent="—"; centsBadge.style.background="#222b36"; centsBadge.style.color="var(--muted)";
@@ -592,16 +751,17 @@ function draw(){
       if(x>CW||x+w<34) continue;
       const y=yForMidi(e.midi);
       const active = elapsed!=null && elapsed>=e.t && elapsed<=e.t+e.dur;
+      const oor = e.midi<voiceLo || e.midi>voiceHi;   // 超出安全音域→红色标示
       const bw=Math.max(w,3);
       if(e.audible){                       // 有参考音：实心条
-        ctx.fillStyle = active ? "#ffd166" : "rgba(76,194,255,.32)";
+        ctx.fillStyle = oor ? "rgba(248,81,73,.55)" : (active ? "#ffd166" : "rgba(76,194,255,.32)");
         roundRect(x,y-5,bw,10,3); ctx.fill();
       }else{                               // 静音遍“该你唱”：空心条
         roundRect(x,y-5,bw,10,3);
-        ctx.fillStyle = active ? "rgba(255,209,102,.30)" : "rgba(255,209,102,.10)";
+        ctx.fillStyle = oor ? "rgba(248,81,73,.22)" : (active ? "rgba(255,209,102,.30)" : "rgba(255,209,102,.10)");
         ctx.fill();
         ctx.lineWidth=1.5;
-        ctx.strokeStyle = active ? "#ffd166" : "rgba(255,209,102,.55)";
+        ctx.strokeStyle = oor ? "#f85149" : (active ? "#ffd166" : "rgba(255,209,102,.55)");
         ctx.stroke();
       }
     }
@@ -617,8 +777,9 @@ function draw(){
         phaseLabel.style.color="#4cc2ff"; }
       else { phaseLabel.textContent="🎤 该你唱"; phaseLabel.style.color="#ffd166"; }
       phaseLabel.style.display="block";
+      rangeWarn.style.display = (cur.midi<voiceLo||cur.midi>voiceHi) ? "block" : "none";  // 超音域提示
     } else { refNoteEl.textContent="—"; }   // 音符/乐句间停顿：标准音留空，但相位提示保持不闪烁
-  } else { refNoteEl.textContent="—"; phaseLabel.style.display="none"; }   // 停止播放才隐藏
+  } else { refNoteEl.textContent="—"; phaseLabel.style.display="none"; rangeWarn.style.display="none"; }   // 停止播放才隐藏
 
   // 检测音高曲线：跟唱全程显示；先听后唱只在“唱”遍有记录点，故唱时可见
   if(elapsed!=null) {
@@ -759,6 +920,11 @@ function loopRAF(){
     if(isPlaying && audioCtx && audioCtx.currentTime>scheduledStop){
       finalizeRep();                  // 结算最后一条音阶
       curRepKey=null; roundId++;
+      if(randomTest){                 // 随机测试：每轮换一条新随机乐句
+        newRandomPhrase();
+        seqData=buildSequence(); updateViewRange();
+        updateInfoLabel();
+      }
       startTime = audioCtx.currentTime + 0.1;
       const wave=waveSel.value;
       for(const e of seqData.events){ if(e.audible) scheduleNote(e.midi, startTime+e.t, e.dur, wave); }
@@ -810,10 +976,8 @@ function initHint(){
 }
 bpmOut.value=bpm.value; setUpCount(0); setStep(1);
 initHint();
-seqData=buildSequence();   // 预先生成，静止时也显示参考条
 resizeCanvas();
-updateViewRange();
-draw();
+setMainMode("practice");   // 默认练习模式：展开练习方式与练习控件，构建序列并绘制
 </script>
 </body>
 </html>
