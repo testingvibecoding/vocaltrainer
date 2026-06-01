@@ -286,17 +286,15 @@ const RANDOM_PHRASES = [
   // —— 旋律类（音阶基础 + 经典曲目，均有格调）——
   { name:"大调音阶",   type:"melody", seq:[0,2,4,5,7] },
   { name:"三度模进",   type:"melody", seq:[0,2,4,2,4,5,7] },
-  { name:"欢乐颂",      type:"melody", seq:[4,4,5,7,7,5,4,2,0,0,2,4,4,2,2] }, // 贝多芬《第九》A句
-  { name:"欢乐颂",      type:"melody", seq:[4,4,5,7,7,5,4,2,0,0,2,4,2,0] },   // A'句（落主音）
-  { name:"欢乐颂",      type:"melody", seq:[2,2,4,0,2,4,5,4,0,2,4,5,4,2,0,2] }, // B句（中段）
-  { name:"致爱丽丝",    type:"melody", seq:[7,6,7,6,7,2,5,3,0,3,7,12,14] },   // Für Elise 完整首句(13音)
-  { name:"茉莉花",      type:"melody", seq:[4,4,7,9,12,12,9,7] },        // 中国民歌
-  { name:"卡农",        type:"melody", seq:[0,-1,-3,-5,-7,-8,-10,-12] }, // 帕赫贝尔 D大调卡农 低音线
-  { name:"绿袖子",      type:"melody", seq:[0,3,5,7,8,7,5,2] },          // Greensleeves（文艺复兴，小调）
-  { name:"红河谷",      type:"melody", seq:[-5,0,4,7,7,4,2,0] },         // Red River Valley
-  { name:"友谊地久天长",type:"melody", seq:[-5,0,0,0,4,2,0,2,4,0,0,4,7,9] }, // Auld Lang Syne 完整首句
-  { name:"送别",        type:"melody", seq:[7,4,7,12,9,12,7,7,12,9,7,4,2,0] }, // 长亭外古道边…(Ordway 曲，公有领域)
-  { name:"送别",        type:"melody", seq:[7,12,12,11,12,14,12,9,7,9,7,4,2,0] } // 天之涯地之角…(B句)
+  { name:"欢乐颂",      type:"melody", seq:[4,4,5,7,7,5,4,2,0,0,2,4,4,2,2] }, // 贝多芬《第九》A句(收于re，半终止)
+  { name:"欢乐颂",      type:"melody", seq:[4,4,5,7,7,5,4,2,0,0,2,4,2,0] },   // A'句(落主音do)
+  { name:"致爱丽丝",    type:"melody", seq:[7,6,7,6,7,2,5,3,0] },   // Für Elise 首句(落a)
+  { name:"茉莉花",      type:"melody", seq:[4,4,7,9,12,12,9,7] },        // 中国民歌首句
+  { name:"下行音阶",    type:"melody", seq:[0,-1,-3,-5,-7,-8,-10,-12] }, // 下行大音阶(落低八度主音)
+  { name:"绿袖子",      type:"melody", seq:[0,3,5,7,8,7,5,2,0] },        // Greensleeves(小调，落主音la)
+  { name:"红河谷",      type:"melody", seq:[-5,0,4,7,7,4,2,0] },         // Red River Valley(落主音)
+  { name:"友谊地久天长",type:"melody", seq:[-5,0,0,4,2,0,4,7] },         // Auld Lang Syne 首句(收于属音sol)
+  { name:"送别",        type:"melody", seq:[7,4,7,12,9,12,7,7,12,9,7,4,2,0] } // 长亭外古道边…(Ordway 曲，落主音)
 ];
 
 /* ============ DOM ============ */
