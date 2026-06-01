@@ -92,6 +92,10 @@
   /* 全屏(添加到主屏幕)时，用一条背景遮住灵动岛/状态栏区域，避免内容透到上面 */
   #safeTop{position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);
     background:var(--bg);z-index:39;pointer-events:none;}
+  /* 全屏模式：确保顶部留足空间避开灵动岛/状态栏（即使系统未正确上报安全区也至少留 54px）*/
+  body.standalone{padding-top:max(env(safe-area-inset-top,0px),54px);}
+  body.standalone .stickyBar{top:max(env(safe-area-inset-top,0px),54px);}
+  body.standalone #safeTop{height:max(env(safe-area-inset-top,0px),54px);}
 </style>
 </head>
 <body>
@@ -257,7 +261,7 @@ const VOICE_RANGES = {
   sop:   { name:"女高音 Soprano (C4–C6)",    r:[60,84] }
 };
 
-/* ============ 随机测试用的短乐句（半音相对根音，每句≤8音）============
+/* ============ 随机测试用的乐句（半音相对根音，每句≤16音）============
    含音阶/分解和弦/世界名曲旋律片段 */
 const RANDOM_PHRASES = [
   // —— 和弦类（含感情色彩）——
@@ -272,12 +276,18 @@ const RANDOM_PHRASES = [
   { name:"大六和弦", type:"chord", mood:"明亮甜美、复古轻快", seq:[0,4,7,9,7,4,0] },
   { name:"纯五度",   type:"chord", mood:"空旷、坚实、有力（无明暗倾向）", seq:[0,7,12,7,0] },
   { name:"大三转位", type:"chord", mood:"明亮稳定（转位，色彩更柔）", seq:[4,7,12,7,4,0] },
+  // 七和弦完整上下行（含八度，七个音）
+  { name:"大七和弦(完整)", type:"chord", mood:"温暖梦幻、舒展（爵士）", seq:[0,4,7,11,12,11,7,4,0] },
+  { name:"属七和弦(完整)", type:"chord", mood:"紧张明亮、强烈倾向解决", seq:[0,4,7,10,12,10,7,4,0] },
+  // 九和弦琶音（九个音，色彩更丰富，以常用为主）
+  { name:"属九和弦", type:"chord", mood:"明亮中带张力，爵士/放克常用", seq:[0,4,7,10,14,10,7,4,0] },
+  { name:"大九和弦", type:"chord", mood:"开阔、温暖、梦幻（爵士）", seq:[0,4,7,11,14,11,7,4,0] },
+  { name:"小九和弦", type:"chord", mood:"忧郁深沉、都市爵士感", seq:[0,3,7,10,14,10,7,3,0] },
   // —— 旋律类（音阶基础 + 经典曲目，均有格调）——
   { name:"大调音阶",   type:"melody", seq:[0,2,4,5,7] },
   { name:"三度模进",   type:"melody", seq:[0,2,4,2,4,5,7] },
-  { name:"欢乐颂",      type:"melody", seq:[4,4,5,7,7,5,4,2] },          // 贝多芬《第九》
-  { name:"欢乐颂(下句)",type:"melody", seq:[0,0,2,4,4,2,2] },
-  { name:"致爱丽丝",    type:"melody", seq:[7,6,7,6,7,2,5,3] },          // 贝多芬 Für Elise
+  { name:"欢乐颂",      type:"melody", seq:[4,4,5,7,7,5,4,2,0,0,2,4,4,2,2] }, // 贝多芬《第九》完整乐句(15音)
+  { name:"致爱丽丝",    type:"melody", seq:[7,6,7,6,7,2,5,3,0,3,7,12,14] },   // Für Elise 完整首句(13音)
   { name:"茉莉花",      type:"melody", seq:[4,4,7,9,12,12,9,7] },        // 中国民歌
   { name:"卡农",        type:"melody", seq:[0,-1,-3,-5,-7,-8,-10,-12] }, // 帕赫贝尔 D大调卡农 低音线
   { name:"绿袖子",      type:"melody", seq:[0,3,5,7,8,7,5,2] },          // Greensleeves（文艺复兴，小调）
@@ -978,6 +988,10 @@ function initHint(){
     micHint.innerHTML="⚠️ 当前非 HTTPS，麦克风可能被拒绝。请用 https:// 网址打开。";
     micHint.style.color="var(--warn)";
   }
+}
+// 全屏(添加到主屏幕)模式：加 standalone 类，给顶部留足空间避开灵动岛
+if(navigator.standalone || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches)){
+  document.body.classList.add("standalone");
 }
 bpmOut.value=bpm.value; setUpCount(0); setStep(1);
 initHint();
