@@ -871,7 +871,7 @@ function finalizeRep(){
   let count;
   if(mode==="listen") count = repW>0;   // 唱遍的音才会进缓冲
   else count = repTotalFrames>0 && (repMicFrames/repTotalFrames) >= (2/3);
-  if(count && repW>0){ showScore(Math.round(repSum/repW)); }
+  if(micOn && count && repW>0){ showScore(Math.round(repSum/repW)); }  // 麦克风未启用则不评分
   repSum=0; repW=0; repMicFrames=0; repTotalFrames=0;
 }
 function showScore(sc){
