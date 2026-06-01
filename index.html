@@ -26,7 +26,7 @@
 
   .canvasWrap{position:relative;margin:6px 8px;border-radius:12px;overflow:hidden;
     background:var(--panel);border:1px solid var(--line);}
-  canvas{display:block;width:100%;height:auto;touch-action:none;}
+  canvas{display:block;width:100%;height:auto;touch-action:pan-y;}  /* 允许在图上竖向拖动滚页 */
   #readout{display:flex;align-items:center;justify-content:center;gap:18px;
     margin:6px 10px 2px;font-variant-numeric:tabular-nums;font-size:13px;}
   #readout b{font-size:20px;}
@@ -86,12 +86,16 @@
   details p{line-height:1.6;}
   .topbar{padding:2px 12px 0;display:flex;flex-direction:column;gap:9px;}
   .modeBlock label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;}
-  /* 播放/麦克风按钮条：滚动时始终吸顶 */
-  .stickyBar{position:sticky;top:0;z-index:40;background:var(--bg);
+  /* 播放/麦克风按钮条：滚动时吸顶，并避开 iOS 灵动岛/状态栏 */
+  .stickyBar{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:var(--bg);
     margin:0 -12px;padding:8px 12px;border-bottom:1px solid var(--line);}
+  /* 全屏(添加到主屏幕)时，用一条背景遮住灵动岛/状态栏区域，避免内容透到上面 */
+  #safeTop{position:fixed;top:0;left:0;right:0;height:env(safe-area-inset-top,0px);
+    background:var(--bg);z-index:39;pointer-events:none;}
 </style>
 </head>
 <body>
+<div id="safeTop"></div>
 <header>
   <h1>练声音准 · Vocal Pitch Trainer</h1>
   <div class="sub">选择练声音型 → 播放参考音 → 跟唱，实时看自己的音准</div>
@@ -703,8 +707,9 @@ window.addEventListener("resize",resizeCanvas);
 let viewLo=48, viewHi=72;
 function updateViewRange(){
   const s=seqData||buildSequence();
-  let lo=s.minMidi-2, hi=s.maxMidi+2;
-  if(hi-lo<14){ const mid=(hi+lo)/2; lo=mid-7; hi=mid+7; }
+  // 上方多留余量，避免唱最高音偏高时绿色曲线跑出画面顶端而看不见
+  let lo=s.minMidi-3, hi=s.maxMidi+5;
+  if(hi-lo<16){ const mid=(hi+lo)/2; lo=mid-8; hi=mid+8; }
   viewLo=lo; viewHi=hi;
 }
 function yForMidi(m){
