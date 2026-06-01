@@ -286,13 +286,17 @@ const RANDOM_PHRASES = [
   // —— 旋律类（音阶基础 + 经典曲目，均有格调）——
   { name:"大调音阶",   type:"melody", seq:[0,2,4,5,7] },
   { name:"三度模进",   type:"melody", seq:[0,2,4,2,4,5,7] },
-  { name:"欢乐颂",      type:"melody", seq:[4,4,5,7,7,5,4,2,0,0,2,4,4,2,2] }, // 贝多芬《第九》完整乐句(15音)
+  { name:"欢乐颂",      type:"melody", seq:[4,4,5,7,7,5,4,2,0,0,2,4,4,2,2] }, // 贝多芬《第九》A句
+  { name:"欢乐颂",      type:"melody", seq:[4,4,5,7,7,5,4,2,0,0,2,4,2,0] },   // A'句（落主音）
+  { name:"欢乐颂",      type:"melody", seq:[2,2,4,0,2,4,5,4,0,2,4,5,4,2,0,2] }, // B句（中段）
   { name:"致爱丽丝",    type:"melody", seq:[7,6,7,6,7,2,5,3,0,3,7,12,14] },   // Für Elise 完整首句(13音)
   { name:"茉莉花",      type:"melody", seq:[4,4,7,9,12,12,9,7] },        // 中国民歌
   { name:"卡农",        type:"melody", seq:[0,-1,-3,-5,-7,-8,-10,-12] }, // 帕赫贝尔 D大调卡农 低音线
   { name:"绿袖子",      type:"melody", seq:[0,3,5,7,8,7,5,2] },          // Greensleeves（文艺复兴，小调）
   { name:"红河谷",      type:"melody", seq:[-5,0,4,7,7,4,2,0] },         // Red River Valley
-  { name:"友谊地久天长",type:"melody", seq:[-5,0,0,4,2,0,4,7] }          // Auld Lang Syne
+  { name:"友谊地久天长",type:"melody", seq:[-5,0,0,0,4,2,0,2,4,0,0,4,7,9] }, // Auld Lang Syne 完整首句
+  { name:"送别",        type:"melody", seq:[7,4,7,12,9,12,7,7,12,9,7,4,2,0] }, // 长亭外古道边…(Ordway 曲，公有领域)
+  { name:"送别",        type:"melody", seq:[7,12,12,11,12,14,12,9,7,9,7,4,2,0] } // 天之涯地之角…(B句)
 ];
 
 /* ============ DOM ============ */
@@ -339,19 +343,30 @@ let randPhrase=null;  // 当前随机乐句 {root, seq, name}
 let testCat="both";   // 测试范围："both"综合 | "chord"只考和弦 | "melody"只考旋律
 let showGuide=true;  // 参考条显示开关（纯视觉，随时切换不影响进行中的练习）
 
-// 随机乐句：按测试范围筛选，从音域内随机选根音 + 随机乐句，确保所有音在 [voiceLo,voiceHi] 内
-function makeRandomPhrase(){
-  let pool=RANDOM_PHRASES.filter(p => testCat==="both" || p.type===testCat);
-  if(!pool.length) pool=RANDOM_PHRASES.slice(); else pool=pool.slice();
-  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+// 随机乐句：按测试范围筛选，从音域内随机选根音；避免与上一条是同一乐句条目
+// （同一乐句即使移到不同音高也算重复；但同一首曲子的不同乐句型可以连着出）
+let lastPhraseEntry=null;
+function pickFit(pool, avoid){
   for(const p of pool){
+    if(p===avoid) continue;
     const mn=Math.min(...p.seq), mx=Math.max(...p.seq);
     const rLo=voiceLo-mn, rHi=voiceHi-mx;
     if(rHi>=rLo){
       const root=rLo+Math.floor(Math.random()*(rHi-rLo+1));
+      lastPhraseEntry=p;
       return {root, seq:p.seq, name:p.name, type:p.type, mood:p.mood};
     }
   }
+  return null;
+}
+function makeRandomPhrase(){
+  let pool=RANDOM_PHRASES.filter(p => testCat==="both" || p.type===testCat);
+  if(!pool.length) pool=RANDOM_PHRASES.slice(); else pool=pool.slice();
+  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+  const r = pickFit(pool, lastPhraseEntry)      // 先尝试避开上一条
+         || pickFit(pool, null);                // 实在只有它能放进音域时才允许重复
+  if(r) return r;
+  lastPhraseEntry=null;
   return {root:voiceLo, seq:[0], name:"单音", type:"melody"};   // 兜底
 }
 function newRandomPhrase(){ randPhrase=makeRandomPhrase(); }
