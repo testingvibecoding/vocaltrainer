@@ -708,7 +708,7 @@ function detectPitch(buf, sampleRate){
   const a=(x1+x3-2*x2)/2, bb=(x3-x1)/2;
   if(a) T0 = maxp - bb/(2*a);
   const freq=sampleRate/T0;
-  if(freq<60||freq>1200) return -1;
+  if(freq<60||freq>3100) return -1;   // 上限提高到约 F7（女声极限高音也能检测）
   return freq;
 }
 
