@@ -116,12 +116,14 @@
     50%{box-shadow:0 0 12px 3px rgba(168,85,247,.6);}
   }
   button.sec.micIdle{animation:micPulse 1.6s ease-in-out infinite;border-color:#a855f7;}
-  /* 未播放：蓝光呼吸提示 */
+  /* 未播放：绿光呼吸提示，按钮为绿色 */
   @keyframes playPulse{
-    0%,100%{box-shadow:0 0 0 0 rgba(76,194,255,0);}
-    50%{box-shadow:0 0 12px 3px rgba(76,194,255,.65);}
+    0%,100%{box-shadow:0 0 0 0 rgba(63,185,80,0);}
+    50%{box-shadow:0 0 20px 7px rgba(63,185,80,.95);}
   }
   button.playIdle{animation:playPulse 1.6s ease-in-out infinite;}
+  #playBtn{background:var(--good);}                 /* 开始按钮绿色 */
+  #playBtn.rec{background:var(--bad);color:#fff;}   /* 播放中(暂停态)仍为红色 */
   /* 播放按钮与音域下拉并排：标签对齐下拉列，按钮与下拉底对齐 */
   .playVoiceRow{display:flex;gap:10px;align-items:flex-end;}
   .playVoiceRow button{flex:0 0 40%;}
@@ -176,7 +178,7 @@
 
   <div class="modeBlock" id="voiceRow" style="display:none;">
     <div class="playVoiceRow">
-      <button id="playBtn" class="playIdle">▶︎ 播放</button>
+      <button id="playBtn" class="playIdle">▶︎ 开始</button>
       <div class="voiceCol">
         <label data-i18n="voiceLbl">选择你的音域</label>
         <select id="voiceSel"></select>
@@ -383,7 +385,7 @@ const I18N = {
     title:"练声音准 · Vocal Pitch Trainer",
     sub:"选择练声音型 → 播放参考音 → 跟唱，实时看自己的音准",
     devPhone:"📱 手机", devComputer:"💻 电脑",
-    play:"▶︎ 播放", stop:"⏸ 暂停",
+    play:"▶︎ 开始", stop:"⏸ 暂停",
     micEnable:"🎤 点击启用麦克风", micInUse:"🎤 麦克风使用中",
     statusInit:"点击「播放」开始（首次会请求麦克风权限）",
     playing:"播放中…跟着唱",
@@ -415,7 +417,7 @@ const I18N = {
     title:"Vocal Pitch Trainer",
     sub:"Pick an exercise → play the reference → sing along with real-time pitch feedback",
     devPhone:"📱 Phone", devComputer:"💻 PC",
-    play:"▶︎ Play", stop:"⏸ Pause",
+    play:"▶︎ Start", stop:"⏸ Pause",
     micEnable:"🎤 Tap to enable mic", micInUse:"🎤 Mic on",
     statusInit:"Tap Play to start (mic permission will be requested)",
     playing:"Playing… sing along",
