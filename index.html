@@ -1079,7 +1079,7 @@ function closeNote(){
     let ns=0;
     if(noteSamples>0){
       const frac=noteAcc/noteSamples;
-      ns=Math.min(100, frac*200);       // 准占比≥50% → 100 分
+      ns=Math.min(100, frac*250);       // 准占比≥40% → 100 分（放宽）
     }
     const w=noteRef.dur;
     repSum+=ns*w; repW+=w;
@@ -1135,7 +1135,7 @@ function loopRAF(){
         if(hasMic){
           repMicFrames++;                                      // 其中检测到发声的帧
           noteSamples++;
-          if(Math.abs(midi-curEv.midi)*100 <= 22) noteAcc++;   // 落在“准”范围
+          if(Math.abs(midi-curEv.midi)*100 <= 30) noteAcc++;   // 落在“准”范围（放宽到±30音分）
         }
       } else { closeNote(); }
     }
@@ -1155,11 +1155,11 @@ function loopRAF(){
           const ac=Math.abs(cents);
           noteNameEl.textContent=midiToName(nearest);
           let label,bg,col;
-          if(ac<=22){ label=t("inTune"); bg="#193d22"; col="#3fb950"; }   // 音准（范围略放宽）
+          if(ac<=30){ label=t("inTune"); bg="#193d22"; col="#3fb950"; }   // 音准（±30音分）
           else{
             label = cents>0 ? t("sharp") : t("flat");
-            if(ac<=38){ bg="#3b3416"; col="#e0b020"; }                    // 轻微（黄）
-            else if(ac<=60){ bg="#3d2a12"; col="#ff9f43"; }               // 较多（橙）
+            if(ac<=45){ bg="#3b3416"; col="#e0b020"; }                    // 轻微（黄）
+            else if(ac<=65){ bg="#3d2a12"; col="#ff9f43"; }               // 较多（橙）
             else{ bg="#3d1c1c"; col="#f85149"; }                          // 严重（红）
           }
           centsBadge.textContent=label;
