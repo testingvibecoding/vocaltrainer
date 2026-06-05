@@ -18,16 +18,16 @@
     overscroll-behavior:none;}
   body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
   header{padding:10px 14px 6px;}
-  header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.3px;}
-  header .sub{font-size:11px;color:var(--muted);margin-top:2px;}
-  #status{font-size:11px;color:var(--muted);margin-top:4px;min-height:14px;}
+  header h1{font-size:16px;line-height:22px;margin:0;font-weight:600;letter-spacing:.3px;}
+  header .sub{font-size:11px;line-height:15px;min-height:15px;color:var(--muted);margin-top:2px;}
+  #status{font-size:11px;line-height:16px;color:var(--muted);margin-top:4px;min-height:16px;}
   #status.err{color:var(--bad);}
   #status.ok{color:var(--good);}
 
   .canvasWrap{position:relative;margin:6px 8px;border-radius:12px;overflow:hidden;
     background:var(--panel);border:1px solid var(--line);}
   canvas{display:block;width:100%;height:auto;touch-action:pan-y;}  /* 允许在图上竖向拖动滚页 */
-  #readout{display:flex;align-items:center;justify-content:center;gap:18px;
+  #readout{display:flex;align-items:center;justify-content:center;gap:18px;height:28px;
     margin:6px 10px 2px;font-variant-numeric:tabular-nums;font-size:13px;}
   #readout b{font-size:20px;}
   .rline{display:flex;align-items:center;gap:6px;line-height:1.2;}
@@ -54,17 +54,17 @@
 
   .controls{padding:6px 12px 16px;display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;}
   .full{grid-column:1 / -1;}
-  label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;}
+  label{display:block;font-size:11px;line-height:15px;color:var(--muted);margin-bottom:4px;}
   select,input[type=range]{width:100%;}
   select{background:var(--panel2);color:var(--text);border:1px solid var(--line);
-    border-radius:9px;padding:9px 8px;font-size:14px;-webkit-appearance:none;appearance:none;}
+    border-radius:9px;height:40px;padding:0 8px;font-size:14px;-webkit-appearance:none;appearance:none;}
   .rangeRow{display:flex;align-items:center;gap:8px;}
   .rangeRow output{font-size:13px;color:var(--text);min-width:46px;text-align:right;
     font-variant-numeric:tabular-nums;}
   input[type=range]{accent-color:var(--accent);height:28px;}
   .btnRow{display:flex;gap:10px;}
-  button{flex:1;border:none;border-radius:11px;padding:14px 10px;font-size:15px;font-weight:600;
-    color:#06121f;background:var(--accent);transition:filter .1s;}
+  button{flex:1;border:none;border-radius:11px;height:48px;padding:0 10px;font-size:15px;font-weight:600;
+    line-height:1;color:#06121f;background:var(--accent);transition:filter .1s;}   /* 固定高度，中英文一致 */
   button:active{filter:brightness(.85);}
   button.sec{background:var(--panel2);color:var(--text);border:1px solid var(--line);}
   button.on{background:var(--good);color:#06121f;}
@@ -76,16 +76,23 @@
   .stepBtn{flex:0 0 auto;width:44px;height:42px;border-radius:11px;background:var(--panel2);
     color:var(--text);border:1px solid var(--line);font-size:22px;font-weight:700;padding:0;line-height:1;}
   .stepper output{font-size:19px;min-width:30px;text-align:center;font-variant-numeric:tabular-nums;}
-  .chip{font-size:12px;padding:6px 10px;border-radius:20px;background:var(--panel2);
-    border:1px solid var(--line);color:var(--muted);}
+  .chip{display:inline-flex;align-items:center;height:30px;box-sizing:border-box;
+    font-size:12px;padding:0 10px;border-radius:20px;background:var(--panel2);
+    border:1px solid var(--line);color:var(--muted);line-height:1;}   /* 固定高度，中英文一致 */
   .chip.active{background:var(--accent);color:#06121f;border-color:var(--accent);}
   .hint{grid-column:1/-1;font-size:11px;color:var(--muted);line-height:1.5;
     background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:8px 10px;}
   details{grid-column:1/-1;font-size:12px;color:var(--muted);}
-  summary{cursor:pointer;padding:4px 0;color:var(--accent);}
+  summary{cursor:pointer;padding:4px 0;line-height:20px;color:var(--accent);}
+  /* 「更多设置」做成醒目按钮样式 */
+  #moreSettings>summary{display:block;list-style:none;background:var(--panel2);
+    border:1px solid var(--accent);border-radius:11px;padding:11px 12px;
+    font-size:14px;font-weight:600;color:var(--accent);text-align:center;}
+  #moreSettings>summary::-webkit-details-marker{display:none;}
+  #moreSettings[open]>summary{margin-bottom:4px;}
   details p{line-height:1.6;}
   .topbar{padding:2px 12px 0;display:flex;flex-direction:column;gap:9px;}
-  .modeBlock label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;}
+  .modeBlock label{display:block;font-size:11px;line-height:15px;color:var(--muted);margin-bottom:4px;}
   /* 播放/麦克风按钮条：滚动时吸顶，并避开 iOS 灵动岛/状态栏 */
   .stickyBar{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:var(--bg);
     margin:0 -12px;padding:8px 12px;border-bottom:1px solid var(--line);}
@@ -96,125 +103,172 @@
   body.standalone{padding-top:max(env(safe-area-inset-top,0px),54px);}
   body.standalone .stickyBar{top:max(env(safe-area-inset-top,0px),54px);}
   body.standalone #safeTop{height:max(env(safe-area-inset-top,0px),54px);}
+  header{position:relative;padding-right:135px;}
+  header h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  /* 右上角四象限：手机/电脑 + CN/EN，等大，总高≈标题+副标题 */
+  #cornerToggle{position:absolute;top:10px;right:12px;display:grid;
+    grid-template-columns:1fr 1fr;grid-template-rows:18px 18px;gap:3px;}
+  #cornerToggle .chip{height:18px;width:100%;box-sizing:border-box;padding:0 7px;
+    font-size:10px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;}
+  /* 麦克风未启用：紫光呼吸提示 */
+  @keyframes micPulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(168,85,247,0);}
+    50%{box-shadow:0 0 12px 3px rgba(168,85,247,.6);}
+  }
+  button.sec.micIdle{animation:micPulse 1.6s ease-in-out infinite;border-color:#a855f7;}
+  /* 未播放：蓝光呼吸提示 */
+  @keyframes playPulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(76,194,255,0);}
+    50%{box-shadow:0 0 12px 3px rgba(76,194,255,.65);}
+  }
+  button.playIdle{animation:playPulse 1.6s ease-in-out infinite;}
+  /* 播放按钮与音域下拉并排：标签对齐下拉列，按钮与下拉底对齐 */
+  .playVoiceRow{display:flex;gap:10px;align-items:flex-end;}
+  .playVoiceRow button{flex:0 0 40%;}
+  .voiceCol{flex:1;min-width:0;}
+  .voiceCol select{width:100%;height:48px;box-sizing:border-box;}
 </style>
 </head>
 <body>
 <div id="safeTop"></div>
 <header>
-  <h1>练声音准 · Vocal Pitch Trainer</h1>
-  <div class="sub">选择练声音型 → 播放参考音 → 跟唱，实时看自己的音准</div>
+  <h1 data-i18n="title">练声音准 · Vocal Pitch Trainer</h1>
+  <div class="sub" data-i18n="sub">选择练声音型 → 播放参考音 → 跟唱，实时看自己的音准</div>
+  <div id="cornerToggle">
+    <span class="chip active" id="devPhone" data-i18n="devPhone">📱 手机</span>
+    <span class="chip" id="devComputer" data-i18n="devComputer">💻 电脑</span>
+    <span class="chip active" id="langCN">CN</span>
+    <span class="chip" id="langEN">EN</span>
+  </div>
 </header>
 
 <div class="topbar">
-  <div class="toggleRow" id="devToggle">
-    <span class="chip active" id="devPhone">📱 手机</span>
-    <span class="chip" id="devComputer">💻 电脑</span>
-  </div>
-
   <div class="btnRow stickyBar">
-    <button id="playBtn">▶︎ 播放</button>
-    <button id="micBtn" class="sec">🎤 点击启用麦克风</button>
+    <button id="micBtn" class="sec micIdle">🎤 点击启用麦克风</button>
   </div>
 
   <div id="status">点击「播放」开始（首次会请求麦克风权限）</div>
 
   <div class="modeBlock">
-    <label>模式</label>
+    <label data-i18n="modeLbl">模式</label>
     <div class="toggleRow">
-      <span class="chip active" id="chipPractice">练习模式</span>
-      <span class="chip" id="chipRandom">🎲 随机测试</span>
+      <span class="chip active" id="chipPractice" data-i18n="chipPractice">练习模式</span>
+      <span class="chip" id="chipRandom" data-i18n="chipRandom">🎲 随机测试</span>
     </div>
   </div>
 
   <div class="modeBlock" id="subModeRow">
-    <label>练习方式</label>
+    <label data-i18n="subModeLbl">练习方式</label>
     <div class="toggleRow">
-      <span class="chip active" id="chipRealtime">实时跟唱 · 重复2次</span>
-      <span class="chip" id="chipListen">先听后唱 · 听1遍唱1遍</span>
+      <span class="chip active" id="chipRealtime" data-i18n="chipRealtime">实时跟唱 · 重复2次</span>
+      <span class="chip" id="chipListen" data-i18n="chipListen">先听后唱 · 听1遍唱1遍</span>
     </div>
   </div>
 
   <div class="modeBlock" id="catRow" style="display:none;">
-    <label>测试范围</label>
+    <label data-i18n="catLbl">测试范围</label>
     <div class="toggleRow">
-      <span class="chip" id="catChord">只考和弦</span>
-      <span class="chip" id="catMelody">只考旋律</span>
-      <span class="chip active" id="catBoth">综合</span>
+      <span class="chip" id="catChord" data-i18n="catChord">只考和弦</span>
+      <span class="chip" id="catMelody" data-i18n="catMelody">只考旋律</span>
+      <span class="chip active" id="catBoth" data-i18n="catBoth">综合</span>
     </div>
   </div>
 
   <div class="modeBlock" id="voiceRow" style="display:none;">
-    <label>你的音域（安全音高范围 / 超出会提示）</label>
-    <select id="voiceSel"></select>
+    <div class="playVoiceRow">
+      <button id="playBtn" class="playIdle">▶︎ 播放</button>
+      <div class="voiceCol">
+        <label data-i18n="voiceLbl">选择你的音域</label>
+        <select id="voiceSel"></select>
+      </div>
+    </div>
   </div>
 </div>
 
 <div id="readout">
-  <span class="rline"><span class="rlabel">标准音</span><b id="refNote">—</b></span>
-  <span class="rline"><span class="rlabel">收音</span><b id="noteName">—</b></span>
-  <span class="rline"><span class="rlabel">准确度</span><span id="centsBadge">—</span></span>
+  <span class="rline"><span class="rlabel" data-i18n="lblTarget">标准音</span><b id="refNote">—</b></span>
+  <span class="rline"><span class="rlabel" data-i18n="lblMic">收音</span><b id="noteName">—</b></span>
+  <span class="rline"><span class="rlabel" data-i18n="lblAcc">准确度</span><span id="centsBadge">—</span></span>
 </div>
 <div class="canvasWrap">
   <canvas id="roll"></canvas>
   <div id="infoLabel"></div>
   <div id="phaseLabel"></div>
   <div id="scoreLabel"></div>
-  <div id="rangeWarn">⚠ 此音超出你的安全音域</div>
+  <div id="rangeWarn" data-i18n="rangeWarn">⚠ 此音超出你的安全音域</div>
 </div>
 
 <div class="controls">
-  <div class="practiceOnly">
-    <label>起始音（根音）</label>
-    <select id="rootSel"></select>
-  </div>
-  <div class="practiceOnly">
-    <label>练习音型</label>
+  <div class="practiceOnly full">
+    <label data-i18n="patternLbl">练习音型</label>
     <select id="patternSel"></select>
   </div>
-  <div class="practiceOnly">
-    <label>向上移调次数</label>
-    <div class="stepper">
-      <button type="button" class="stepBtn" id="upMinus">−</button>
-      <output id="upOut">0</output>
-      <button type="button" class="stepBtn" id="upPlus">+</button>
-    </div>
-  </div>
-  <div class="practiceOnly">
-    <label>每次移调</label>
-    <div class="toggleRow" id="stepGroup">
-      <span class="chip active" id="stepSemiBtn">半音</span>
-      <span class="chip" id="stepWholeBtn">全音</span>
-    </div>
-  </div>
 
-  <div>
-    <label>速度 <span class="muted" id="bpmLabel"></span></label>
-    <div class="rangeRow">
-      <input type="range" id="bpm" min="50" max="200" value="100" step="2">
-      <output id="bpmOut">100</output>
+  <details class="full" id="moreSettings">
+    <summary id="moreSummary">⚙ 更多设置</summary>
+    <div class="practiceOnly" style="margin-top:10px;">
+      <label data-i18n="rootLbl">起始音（根音）</label>
+      <select id="rootSel"></select>
     </div>
-  </div>
-  <div>
-    <label>音色</label>
-    <select id="waveSel">
-      <option value="piano" selected>钢琴</option>
-      <option value="violin">电子</option>
-    </select>
-  </div>
-
-  <div class="full">
-    <label>显示</label>
-    <div class="toggleRow">
-      <span class="chip active" id="chipGuide">显示参考条</span>
+    <div class="practiceOnly" style="margin-top:10px;">
+      <label data-i18n="transLbl">移调</label>
+      <div class="toggleRow">
+        <span class="chip" id="transOff" data-i18n="transOffTxt">不移调</span>
+        <span class="chip active" id="transOn" data-i18n="transOnTxt">移调</span>
+      </div>
     </div>
-  </div>
+    <div id="transDirRow" style="display:none;margin-top:10px;">
+      <label data-i18n="dirLbl">移调方式</label>
+      <div class="toggleRow">
+        <span class="chip active" id="dirUp" data-i18n="dirUpTxt">上移</span>
+        <span class="chip" id="dirUpBack" data-i18n="dirUpBackTxt">上移+返回</span>
+        <span class="chip" id="dirDown" data-i18n="dirDownTxt">下移</span>
+        <span class="chip" id="dirDownBack" data-i18n="dirDownBackTxt">下移+返回</span>
+      </div>
+    </div>
+    <div id="transCntRow" style="display:none;margin-top:10px;">
+      <label data-i18n="cntLbl">移调次数</label>
+      <div class="stepper">
+        <button type="button" class="stepBtn" id="upMinus">−</button>
+        <output id="upOut">6</output>
+        <button type="button" class="stepBtn" id="upPlus">+</button>
+      </div>
+    </div>
+    <div id="transStepRow" style="display:none;margin-top:10px;">
+      <label data-i18n="stepLbl">每次移调</label>
+      <div class="toggleRow" id="stepGroup">
+        <span class="chip active" id="stepSemiBtn" data-i18n="stepSemiTxt">半音</span>
+        <span class="chip" id="stepWholeBtn" data-i18n="stepWholeTxt">全音</span>
+      </div>
+    </div>
+    <div style="margin-top:10px;">
+      <label><span data-i18n="tempoLbl">速度</span> <span class="muted" id="bpmLabel"></span></label>
+      <div class="rangeRow">
+        <input type="range" id="bpm" min="50" max="200" value="100" step="2">
+        <output id="bpmOut">100</output>
+      </div>
+    </div>
+    <div style="margin-top:10px;">
+      <label data-i18n="timbreLbl">音色</label>
+      <select id="waveSel">
+        <option value="piano" selected data-i18n="optPiano">钢琴</option>
+        <option value="violin" data-i18n="optElec">电子</option>
+      </select>
+    </div>
+    <div style="margin-top:10px;">
+      <label data-i18n="dispLbl">显示</label>
+      <div class="toggleRow">
+        <span class="chip active" id="chipGuide" data-i18n="guideTxt">显示参考条</span>
+      </div>
+    </div>
+  </details>
 
   <div class="hint" id="micHint"></div>
 
   <details>
-    <summary>关于音准检测与离线使用</summary>
-    <p>背景的彩色横条是参考音高（piano-roll）。开启麦克风后，你跟唱的实时音高会以亮色曲线叠加在上面——曲线压在横条中线说明音准。上方显示标准音、收音音名与准确度。<br><br>
-    iOS Safari 出于安全要求，麦克风只能在 <b>HTTPS 网址</b> 下使用。如果你是用「文件」App 直接打开本文件（file://），播放和画图正常，但麦克风会被拒绝。把本文件传到一个免费 HTTPS 托管后，用 Safari 打开网址即可，加载后可离线、可「添加到主屏幕」当 App 用。具体托管方法见随附说明。</p>
+    <summary data-i18n="aboutSummary">关于音准检测与离线使用</summary>
+    <p data-i18n-html="aboutBody">背景的彩色横条是参考音高（piano-roll）。开启麦克风后，你跟唱的实时音高会以亮色曲线叠加在上面——曲线压在横条中线说明音准。上方显示标准音、收音音名与准确度。<br><br>
+    iOS Safari 出于安全要求，麦克风只能在 <b>HTTPS 网址</b> 下使用。如果你是用「文件」App 直接打开本文件（file://），播放和画图正常，但麦克风会被拒绝。把本文件传到一个免费 HTTPS 托管后，用 Safari 打开网址即可，加载后可离线、可「添加到主屏幕」当 App 用。</p>
   </details>
 </div>
 
@@ -230,77 +284,77 @@ function midiToName(m){ const r=Math.round(m); return NOTE_NAMES[((r%12)+12)%12]
 /* ============ 练习音型（半音相对根音的序列）============ */
 /* 每个音 = 根音 + 半音偏移。上行模式末尾自动加返回（如开启）。 */
 const PATTERNS = {
-  octave_hold:  { name:"八度延长 (上行→顶音4拍→下行→底音4拍)",
+  rossini:      { name:"罗西尼音阶 (1-3-5-8-10-12 上下行)", nameEn:"Rossini scale (1-3-5-8-10-12)", up:[0,4,7,12,16,19], turn:[0,4,7,12,16,19,17,14,11,7,5,2,0] },
+  octave_hold:  { name:"八度延长 (上行→顶音4拍→下行→底音4拍)", nameEn:"Octave sustain (up → top ×4 → down → root ×4)",
                   up:[0,2,4,5,7,9,11,[12,4]],
                   turn:[0,2,4,5,7,9,11,[12,4],12,11,9,7,5,4,2,[0,4]] },
-  fifth_hold:   { name:"五度延长 (上行→5音4拍→下行→1音4拍)",
+  fifth_hold:   { name:"五度延长 (上行→5音4拍→下行→1音4拍)", nameEn:"Fifth sustain (up → 5th ×4 → down → root ×4)",
                   up:[0,2,4,5,[7,4]],
                   turn:[0,2,4,5,[7,4],7,5,4,2,[0,4]] },
-  rossini:      { name:"罗西尼音阶 (1-3-5-8-10-12 上下行)", up:[0,4,7,12,16,19], turn:[0,4,7,12,16,19,17,14,11,7,5,2,0] },
-  five_scale:   { name:"五度音阶 (Do-Re-Mi-Fa-Sol)", up:[0,2,4,5,7], turn:[0,2,4,5,7,5,4,2,0] },
-  triad:        { name:"三和弦琶音 (Do-Mi-Sol)",       up:[0,4,7],     turn:[0,4,7,4,0] },
-  octave_arp:   { name:"八度琶音 (Do-Mi-Sol-Do')",     up:[0,4,7,12],  turn:[0,4,7,12,7,4,0] },
-  thirds:       { name:"三度模进 (Do-Mi Re-Fa…)",      up:[0,4,2,5,4,7], turn:[0,4,2,5,4,7,5,9,7,5,4,2,0] },
-  fifth_jump:   { name:"五度跳音 (Do-Sol-Do)",         up:[0,7,0],     turn:[0,7,0] },
-  octave_jump:  { name:"八度跳音 (Do-Do')",            up:[0,12,0],    turn:[0,12,0] },
-  major_full:   { name:"完整大音阶 (Do…Do')",          up:[0,2,4,5,7,9,11,12], turn:[0,2,4,5,7,9,11,12,11,9,7,5,4,2,0] },
-  five_tone:    { name:"五声音阶 (宫商角徵羽)",         up:[0,2,4,7,9],  turn:[0,2,4,7,9,12,9,7,4,2,0] },
-  nine_tone:    { name:"九连音阶 (1-2-3-4-5-4-3-2-1)",  up:[0,2,4,5,7],  turn:[0,2,4,5,7,5,4,2,0] },
-  messa:        { name:"长音 / 渐强渐弱 (持续音)",      up:[0],          turn:[0,0,0,0] },
-  semitone:     { name:"半音阶 (上下半音)",             up:[0,1,2,1],    turn:[0,1,2,1,0] }
+  five_scale:   { name:"五度音阶 (Do-Re-Mi-Fa-Sol)", nameEn:"Five-note scale (Do–Sol)", up:[0,2,4,5,7], turn:[0,2,4,5,7,5,4,2,0] },
+  triad:        { name:"三和弦琶音 (Do-Mi-Sol)",       nameEn:"Triad arpeggio (Do-Mi-Sol)", up:[0,4,7],     turn:[0,4,7,4,0] },
+  octave_arp:   { name:"八度琶音 (Do-Mi-Sol-Do')",     nameEn:"Octave arpeggio (Do-Mi-Sol-Do')", up:[0,4,7,12],  turn:[0,4,7,12,7,4,0] },
+  thirds:       { name:"三度模进 (Do-Mi Re-Fa…)",      nameEn:"Thirds sequence (Do-Mi Re-Fa…)", up:[0,4,2,5,4,7], turn:[0,4,2,5,4,7,5,9,7,5,4,2,0] },
+  fifth_jump:   { name:"五度跳音 (Do-Sol-Do)",         nameEn:"Fifth leaps (Do-Sol-Do)", up:[0,7,0],     turn:[0,7,0] },
+  octave_jump:  { name:"八度跳音 (Do-Do')",            nameEn:"Octave leaps (Do-Do')", up:[0,12,0],    turn:[0,12,0] },
+  major_full:   { name:"完整大音阶 (Do…Do')",          nameEn:"Full major scale (Do…Do')", up:[0,2,4,5,7,9,11,12], turn:[0,2,4,5,7,9,11,12,11,9,7,5,4,2,0] },
+  five_tone:    { name:"五声音阶 (宫商角徵羽)",         nameEn:"Pentatonic scale", up:[0,2,4,7,9],  turn:[0,2,4,7,9,12,9,7,4,2,0] },
+  nine_tone:    { name:"九连音阶 (1-2-3-4-5-4-3-2-1)",  nameEn:"Nine-note scale (1-2-3-4-5-4-3-2-1)", up:[0,2,4,5,7],  turn:[0,2,4,5,7,5,4,2,0] },
+  messa:        { name:"长音 / 渐强渐弱 (持续音)",      nameEn:"Long tone (messa di voce)", up:[0],          turn:[0,0,0,0] },
+  semitone:     { name:"半音阶 (上下半音)",             nameEn:"Chromatic neighbors", up:[0,1,2,1],    turn:[0,1,2,1,0] }
 };
 
 /* ============ 音域（安全音域，MIDI 上下限，约为业余舒适范围）============ */
 const VOICE_RANGES = {
-  bass:  { name:"男低音 Bass (E2–D4)",       r:[40,62] },
-  bari:  { name:"男中音 Baritone (G2–F4)",   r:[43,65] },
-  ten2:  { name:"男次高音 (A2–G4)",          r:[45,67] },
-  tenor: { name:"男高音 Tenor (C3–C5)",      r:[48,72] },
-  mezzo: { name:"女中音 Mezzo (F3–F5)",      r:[53,77] },
-  sop2:  { name:"女次高音 (A3–A5)",          r:[57,81] },
-  sop:   { name:"女高音 Soprano (C4–C6)",    r:[60,84] }
+  bass:  { name:"男低音 Bass (E2–D4)",       nameEn:"Bass (E2–D4)",          r:[40,62] },
+  bari:  { name:"男中音 Baritone (G2–F4)",   nameEn:"Baritone (G2–F4)",      r:[43,65] },
+  ten2:  { name:"男次高音 (A2–G4)",          nameEn:"Low tenor (A2–G4)",     r:[45,67] },
+  tenor: { name:"男高音 Tenor (C3–C5)",      nameEn:"Tenor (C3–C5)",         r:[48,72] },
+  mezzo: { name:"女中音 Mezzo (F3–F5)",      nameEn:"Mezzo-soprano (F3–F5)", r:[53,77] },
+  sop2:  { name:"女次高音 (A3–A5)",          nameEn:"High mezzo (A3–A5)",    r:[57,81] },
+  sop:   { name:"女高音 Soprano (C4–C6)",    nameEn:"Soprano (C4–C6)",       r:[60,84] }
 };
 
 /* ============ 随机测试用的乐句（半音相对根音，每句≤16音）============
    含音阶/分解和弦/世界名曲旋律片段 */
 const RANDOM_PHRASES = [
   // —— 和弦类（含感情色彩）——
-  { name:"大三和弦", type:"chord", mood:"明亮、稳定、积极欢快", seq:[0,4,7,12,7,4,0] },
-  { name:"小三和弦", type:"chord", mood:"柔和、忧郁、伤感内省", seq:[0,3,7,12,7,3,0] },
-  { name:"属七和弦", type:"chord", mood:"紧张、有倾向性，渴望解决", seq:[0,4,7,10,7,4,0] },
-  { name:"大七和弦", type:"chord", mood:"温暖、梦幻、慵懒（爵士感）", seq:[0,4,7,11,7,4,0] },
-  { name:"小七和弦", type:"chord", mood:"柔和内敛、忧郁中带平静", seq:[0,3,7,10,7,3,0] },
-  { name:"减三和弦", type:"chord", mood:"不安、紧张、悬疑", seq:[0,3,6,3,0] },
-  { name:"增三和弦", type:"chord", mood:"神秘、悬浮、不安定（梦境感）", seq:[0,4,8,4,0] },
-  { name:"挂四和弦", type:"chord", mood:"悬而未决、开放、期待", seq:[0,5,7,5,0] },
-  { name:"大六和弦", type:"chord", mood:"明亮甜美、复古轻快", seq:[0,4,7,9,7,4,0] },
-  { name:"纯五度",   type:"chord", mood:"空旷、坚实、有力（无明暗倾向）", seq:[0,7,12,7,0] },
-  { name:"大三转位", type:"chord", mood:"明亮稳定（转位，色彩更柔）", seq:[4,7,12,7,4,0] },
+  { name:"大三和弦", nameEn:"Major triad", type:"chord", mood:"明亮、稳定、积极欢快", moodEn:"bright, stable, upbeat", seq:[0,4,7,12,7,4,0] },
+  { name:"小三和弦", nameEn:"Minor triad", type:"chord", mood:"柔和、忧郁、伤感内省", moodEn:"soft, melancholy, introspective", seq:[0,3,7,12,7,3,0] },
+  { name:"属七和弦", nameEn:"Dominant 7th", type:"chord", mood:"紧张、有倾向性，渴望解决", moodEn:"tense, pulls toward resolution", seq:[0,4,7,10,7,4,0] },
+  { name:"大七和弦", nameEn:"Major 7th", type:"chord", mood:"温暖、梦幻、慵懒（爵士感）", moodEn:"warm, dreamy, jazzy", seq:[0,4,7,11,7,4,0] },
+  { name:"小七和弦", nameEn:"Minor 7th", type:"chord", mood:"柔和内敛、忧郁中带平静", moodEn:"mellow, calm melancholy", seq:[0,3,7,10,7,3,0] },
+  { name:"减三和弦", nameEn:"Diminished triad", type:"chord", mood:"不安、紧张、悬疑", moodEn:"uneasy, tense, suspenseful", seq:[0,3,6,3,0] },
+  { name:"增三和弦", nameEn:"Augmented triad", type:"chord", mood:"神秘、悬浮、不安定（梦境感）", moodEn:"mysterious, floating, unstable", seq:[0,4,8,4,0] },
+  { name:"挂四和弦", nameEn:"Sus4", type:"chord", mood:"悬而未决、开放、期待", moodEn:"suspended, open, expectant", seq:[0,5,7,5,0] },
+  { name:"大六和弦", nameEn:"Major 6th", type:"chord", mood:"明亮甜美、复古轻快", moodEn:"sweet, retro, light", seq:[0,4,7,9,7,4,0] },
+  { name:"纯五度",   nameEn:"Perfect fifth", type:"chord", mood:"空旷、坚实、有力（无明暗倾向）", moodEn:"open, solid, neutral", seq:[0,7,12,7,0] },
+  { name:"大三转位", nameEn:"Major triad (inv.)", type:"chord", mood:"明亮稳定（转位，色彩更柔）", moodEn:"bright, softer color (inversion)", seq:[4,7,12,7,4,0] },
   // 七和弦完整上下行（含八度，七个音）
-  { name:"大七和弦(完整)", type:"chord", mood:"温暖梦幻、舒展（爵士）", seq:[0,4,7,11,12,11,7,4,0] },
-  { name:"属七和弦(完整)", type:"chord", mood:"紧张明亮、强烈倾向解决", seq:[0,4,7,10,12,10,7,4,0] },
+  { name:"大七和弦(完整)", nameEn:"Major 7th (full)", type:"chord", mood:"温暖梦幻、舒展（爵士）", moodEn:"warm, expansive, jazzy", seq:[0,4,7,11,12,11,7,4,0] },
+  { name:"属七和弦(完整)", nameEn:"Dominant 7th (full)", type:"chord", mood:"紧张明亮、强烈倾向解决", moodEn:"bright tension, strong pull", seq:[0,4,7,10,12,10,7,4,0] },
   // 九和弦琶音（九个音，色彩更丰富，以常用为主）
-  { name:"属九和弦", type:"chord", mood:"明亮中带张力，爵士/放克常用", seq:[0,4,7,10,14,10,7,4,0] },
-  { name:"大九和弦", type:"chord", mood:"开阔、温暖、梦幻（爵士）", seq:[0,4,7,11,14,11,7,4,0] },
-  { name:"小九和弦", type:"chord", mood:"忧郁深沉、都市爵士感", seq:[0,3,7,10,14,10,7,3,0] },
+  { name:"属九和弦", nameEn:"Dominant 9th", type:"chord", mood:"明亮中带张力，爵士/放克常用", moodEn:"bright tension, jazz/funk", seq:[0,4,7,10,14,10,7,4,0] },
+  { name:"大九和弦", nameEn:"Major 9th", type:"chord", mood:"开阔、温暖、梦幻（爵士）", moodEn:"open, warm, dreamy (jazz)", seq:[0,4,7,11,14,11,7,4,0] },
+  { name:"小九和弦", nameEn:"Minor 9th", type:"chord", mood:"忧郁深沉、都市爵士感", moodEn:"deep, urban jazz feel", seq:[0,3,7,10,14,10,7,3,0] },
   // —— 旋律类（音阶基础 + 经典曲目，均有格调）——
-  { name:"大调音阶",   type:"melody", seq:[0,2,4,5,7] },
-  { name:"三度模进",   type:"melody", seq:[0,2,4,2,4,5,7] },
-  { name:"欢乐颂",      type:"melody", seq:[4,4,5,7,7,5,4,2,0,0,2,4,4,2,2] }, // 贝多芬《第九》A句
-  { name:"致爱丽丝",    type:"melody", seq:[7,6,7,6,7,2,5,3,0] },   // Für Elise 首句(落a)
-  { name:"小步舞曲",    type:"melody", seq:[7,0,2,4,5,7,0] },           // 巴赫 G大调小步舞曲(落主音)
-  { name:"茉莉花",      type:"melody", seq:[4,4,7,9,12,12,9,7,7,9,7] },  // mi mi sol la do' do' la sol sol la sol
-  { name:"下行音阶",    type:"melody", seq:[0,-1,-3,-5,-7,-8,-10,-12] }, // 下行大音阶(落低八度主音)
-  { name:"绿袖子",      type:"melody", seq:[0,3,3,5,7,8,7,5,5,2,-2] },   // la do do re mi fa mi re re ti 低音sol
-  { name:"红河谷",      type:"melody", seq:[-5,0,4,4,4,4,2,4,2,0] },     // Red River Valley
-  { name:"友谊地久天长",type:"melody", seq:[-5,0,0,4,2,0,2] },           // sol do do mi re do re
-  { name:"送别",        type:"melody", seq:[7,4,7,12,9,12,7] }, // 送别(Ordway 曲)前七音
+  { name:"大调音阶",   nameEn:"Major scale (up)", type:"melody", seq:[0,2,4,5,7] },
+  { name:"三度模进",   nameEn:"Thirds sequence", type:"melody", seq:[0,2,4,2,4,5,7] },
+  { name:"欢乐颂",      nameEn:"Ode to Joy", type:"melody", seq:[4,4,5,7,7,5,4,2,0,0,2,4,4,2,2] }, // 贝多芬《第九》A句
+  { name:"致爱丽丝",    nameEn:"Für Elise", type:"melody", seq:[7,6,7,6,7,2,5,3,0] },   // Für Elise 首句(落a)
+  { name:"小步舞曲",    nameEn:"Minuet in G (Bach)", type:"melody", seq:[7,0,2,4,5,7,0] },           // 巴赫 G大调小步舞曲(落主音)
+  { name:"茉莉花",      nameEn:"Jasmine Flower", type:"melody", seq:[4,4,7,9,12,12,9,7,7,9,7] },  // mi mi sol la do' do' la sol sol la sol
+  { name:"下行音阶",    nameEn:"Descending scale", type:"melody", seq:[0,-1,-3,-5,-7,-8,-10,-12] }, // 下行大音阶(落低八度主音)
+  { name:"绿袖子",      nameEn:"Greensleeves", type:"melody", seq:[0,3,3,5,7,8,7,5,5,2,-2] },   // la do do re mi fa mi re re ti 低音sol
+  { name:"红河谷",      nameEn:"Red River Valley", type:"melody", seq:[-5,0,4,4,4,4,2,4,2,0] },
+  { name:"友谊地久天长",nameEn:"Auld Lang Syne", type:"melody", seq:[-5,0,0,4,2,0,2] },           // sol do do mi re do re
+  { name:"送别",        nameEn:"Farewell (Song Bie)", type:"melody", seq:[7,4,7,12,9,12,7] }, // 送别(Ordway 曲)前七音
   // —— 用户提供音高的旋律句（相对半音，移调不变音程）——
-  { name:"小城故事",    type:"melody", seq:[4,7,9,7,9,12,7,7,9,4,2,4,7,2] }, // E G A G A C5 G G A E D E G D
-  { name:"我只在乎你",  type:"melody", seq:[9,9,9,7,9,14,12] },              // A A A G A D5 C5
-  { name:"但愿人长久",  type:"melody", seq:[7,7,4,2,4,7,7] },                // E5 E5 C#5 B C#5 E5 E5
-  { name:"彩虹之上",    type:"melody", seq:[0,0,12,12,11,7,9,11,12,0,0,9,9,7,7] }, // do do 'do 'do ti sol la ti 'do do do la la sol sol
-  { name:"Let It Be",   type:"melody", seq:[7,7,9,4,7,7,12,14,16,16,16,14,14,12] } // G G A E G G C5 D5 E5 E5 E5 D5 D5 C5
+  { name:"小城故事",    nameEn:"Small Town Story", type:"melody", seq:[4,7,9,7,9,12,7,7,9,4,2,4,7,2] }, // E G A G A C5 G G A E D E G D
+  { name:"我只在乎你",  nameEn:"I Only Care About You", type:"melody", seq:[9,9,9,7,9,14,12] },              // A A A G A D5 C5
+  { name:"但愿人长久",  nameEn:"Wishing We Last Forever", type:"melody", seq:[7,7,4,2,4,7,7] },                // E5 E5 C#5 B C#5 E5 E5
+  { name:"彩虹之上",    nameEn:"Over the Rainbow", type:"melody", seq:[0,0,12,12,11,7,9,11,12,0,0,9,9,7,7] },
+  { name:"Let It Be",   nameEn:"Let It Be", type:"melody", seq:[7,7,9,4,7,7,12,14,16,16,16,14,14,12] } // G G A E G G C5 D5 E5 E5 E5 D5 D5 C5
 ];
 
 /* ============ DOM ============ */
@@ -308,6 +362,9 @@ const $ = id => document.getElementById(id);
 const rootSel=$("rootSel"), patternSel=$("patternSel"), bpm=$("bpm"), bpmOut=$("bpmOut"),
       waveSel=$("waveSel"), upOut=$("upOut"), upMinus=$("upMinus"), upPlus=$("upPlus"),
       stepGroup=$("stepGroup"), stepSemiBtn=$("stepSemiBtn"), stepWholeBtn=$("stepWholeBtn"),
+      transOff=$("transOff"), transOn=$("transOn"), transDirRow=$("transDirRow"),
+      transCntRow=$("transCntRow"), transStepRow=$("transStepRow"),
+      dirUp=$("dirUp"), dirUpBack=$("dirUpBack"), dirDown=$("dirDown"), dirDownBack=$("dirDownBack"),
       playBtn=$("playBtn"), micBtn=$("micBtn"), statusEl=$("status"), micHint=$("micHint"),
       noteNameEl=$("noteName"), refNoteEl=$("refNote"), centsBadge=$("centsBadge"), phaseLabel=$("phaseLabel"), scoreLabel=$("scoreLabel"), infoLabel=$("infoLabel"),
       chipGuide=$("chipGuide"),
@@ -317,7 +374,125 @@ const rootSel=$("rootSel"), patternSel=$("patternSel"), bpm=$("bpm"), bpmOut=$("
       devComputer=$("devComputer"), devPhone=$("devPhone"),
       voiceSel=$("voiceSel"), rangeWarn=$("rangeWarn"),
       catRow=$("catRow"), voiceRow=$("voiceRow"),
-      catChord=$("catChord"), catMelody=$("catMelody"), catBoth=$("catBoth");
+      catChord=$("catChord"), catMelody=$("catMelody"), catBoth=$("catBoth"),
+      langCN=$("langCN"), langEN=$("langEN");
+
+/* ============ 多语言 (CN/EN) ============ */
+const I18N = {
+  zh: {
+    title:"练声音准 · Vocal Pitch Trainer",
+    sub:"选择练声音型 → 播放参考音 → 跟唱，实时看自己的音准",
+    devPhone:"📱 手机", devComputer:"💻 电脑",
+    play:"▶︎ 播放", stop:"⏸ 暂停",
+    micEnable:"🎤 点击启用麦克风", micInUse:"🎤 麦克风使用中",
+    statusInit:"点击「播放」开始（首次会请求麦克风权限）",
+    playing:"播放中…跟着唱",
+    micOpened:"麦克风已开 — 唱一个长音试试",
+    micErrFile:"麦克风不可用：iOS 不允许本地文件(file://)访问麦克风，请用 HTTPS 网址打开",
+    micErrPerm:"无法访问麦克风：", micErrPerm2:" — 请在浏览器设置中允许麦克风权限",
+    modeLbl:"模式", chipPractice:"练习模式", chipRandom:"🎲 随机测试",
+    subModeLbl:"练习方式", chipRealtime:"实时跟唱 · 重复2次", chipListen:"先听后唱 · 听1遍唱1遍",
+    catLbl:"测试范围", catChord:"只考和弦", catMelody:"只考旋律", catBoth:"综合",
+    voiceLbl:"选择你的音域",
+    lblTarget:"标准音", lblMic:"收音", lblAcc:"准确度",
+    rangeWarn:"⚠ 此音超出你的安全音域",
+    rootLbl:"起始音（根音）", patternLbl:"练习音型",
+    transLbl:"移调", transOffTxt:"不移调", transOnTxt:"移调",
+    dirLbl:"移调方式", dirUpTxt:"上移", dirUpBackTxt:"上移+返回", dirDownTxt:"下移", dirDownBackTxt:"下移+返回",
+    cntLbl:"移调次数", stepLbl:"每次移调", stepSemiTxt:"半音", stepWholeTxt:"全音",
+    tempoLbl:"速度", timbreLbl:"音色", optPiano:"钢琴", optElec:"电子",
+    dispLbl:"显示", guideTxt:"显示参考条", moreLbl:"⚙ 更多设置", moreLblOpen:"收起更多设置",
+    aboutSummary:"关于音准检测与离线使用",
+    aboutBody:"背景的彩色横条是参考音高（piano-roll）。开启麦克风后，你跟唱的实时音高会以亮色曲线叠加在上面——曲线压在横条中线说明音准。上方显示标准音、收音音名与准确度。<br><br>iOS Safari 出于安全要求，麦克风只能在 <b>HTTPS 网址</b> 下使用。如果你是用「文件」App 直接打开本文件（file://），播放和画图正常，但麦克风会被拒绝。把本文件传到一个免费 HTTPS 托管后，用 Safari 打开网址即可，加载后可离线、可「添加到主屏幕」当 App 用。",
+    hintFile:"⚠️ 你正用本地文件打开：演奏与画图可用，但 <b>iOS 不允许 file:// 访问麦克风</b>。把本文件传到免费 HTTPS 托管后用 Safari 打开即可。",
+    hintHttps:"✅ 安全上下文 (HTTPS)：麦克风可用。点「麦克风」授权后开始练。",
+    hintNoHttps:"⚠️ 当前非 HTTPS，麦克风可能被拒绝。请用 https:// 网址打开。",
+    phListen:"🔊 先听", phFollow:"🔊 跟唱", phYourTurn:"🎤 该你唱",
+    inTune:"准", sharp:"太高", flat:"太低",
+    scoreCap:"得分", pts:"分"
+  },
+  en: {
+    title:"Vocal Pitch Trainer",
+    sub:"Pick an exercise → play the reference → sing along with real-time pitch feedback",
+    devPhone:"📱 Phone", devComputer:"💻 PC",
+    play:"▶︎ Play", stop:"⏸ Pause",
+    micEnable:"🎤 Tap to enable mic", micInUse:"🎤 Mic on",
+    statusInit:"Tap Play to start (mic permission will be requested)",
+    playing:"Playing… sing along",
+    micOpened:"Mic on — try a long note",
+    micErrFile:"Mic unavailable: iOS blocks the microphone for local files (file://). Open via an HTTPS URL.",
+    micErrPerm:"Cannot access microphone: ", micErrPerm2:" — please allow mic access in browser settings",
+    modeLbl:"Mode", chipPractice:"Practice", chipRandom:"🎲 Random Test",
+    subModeLbl:"Practice style", chipRealtime:"Sing along · ×2 repeats", chipListen:"Listen then sing",
+    catLbl:"Test scope", catChord:"Chords only", catMelody:"Melodies only", catBoth:"Mixed",
+    voiceLbl:"Select your voice range",
+    lblTarget:"Target", lblMic:"Mic", lblAcc:"Accuracy",
+    rangeWarn:"⚠ This note is outside your safe range",
+    rootLbl:"Starting note (root)", patternLbl:"Exercise pattern",
+    transLbl:"Transpose", transOffTxt:"Off", transOnTxt:"On",
+    dirLbl:"Direction", dirUpTxt:"Up", dirUpBackTxt:"Up + return", dirDownTxt:"Down", dirDownBackTxt:"Down + return",
+    cntLbl:"Steps", stepLbl:"Step size", stepSemiTxt:"Semitone", stepWholeTxt:"Whole tone",
+    tempoLbl:"Tempo", timbreLbl:"Timbre", optPiano:"Piano", optElec:"Electronic",
+    dispLbl:"Display", guideTxt:"Show guide bars", moreLbl:"⚙ More settings", moreLblOpen:"Collapse settings",
+    aboutSummary:"About pitch detection & offline use",
+    aboutBody:"The colored bars are the reference pitches (piano-roll). With the mic on, your sung pitch is drawn as a bright curve on top — keeping the curve on a bar's center line means you are in tune. The target note, detected note and accuracy are shown above.<br><br>For security, iOS Safari only allows the microphone on <b>HTTPS pages</b>. If you open this file directly (file://), playback and graphics work but the mic is blocked. Host it on any free HTTPS service and open the URL in Safari — it then works offline and can be added to the Home Screen.",
+    hintFile:"⚠️ Opened as a local file: playback works, but <b>iOS blocks the mic for file://</b>. Host on free HTTPS and open in Safari.",
+    hintHttps:"✅ Secure context (HTTPS): the microphone is available. Tap the mic button to start.",
+    hintNoHttps:"⚠️ Not HTTPS — the mic may be blocked. Open via an https:// URL.",
+    phListen:"🔊 Listen", phFollow:"🔊 Sing along", phYourTurn:"🎤 Your turn",
+    inTune:"OK", sharp:"Sharp", flat:"Flat",
+    scoreCap:"Score", pts:""
+  }
+};
+let lang="zh";
+try{ const sl=localStorage.getItem("vpt_lang"); if(sl==="en"||sl==="zh") lang=sl; }catch(e){}
+function t(k){ const d=I18N[lang]||I18N.zh; return (d[k]!==undefined)?d[k]:(I18N.zh[k]!==undefined?I18N.zh[k]:k); }
+let statusKey=null;
+
+function fillPatternSel(){
+  const v=patternSel.value;
+  patternSel.innerHTML="";
+  for(const k in PATTERNS){
+    const o=document.createElement("option"); o.value=k;
+    o.textContent=(lang==="en"&&PATTERNS[k].nameEn)?PATTERNS[k].nameEn:PATTERNS[k].name;
+    patternSel.appendChild(o);
+  }
+  patternSel.value = v || "rossini";
+}
+function fillVoiceSel(){
+  const v=voiceSel.value;
+  voiceSel.innerHTML="";
+  for(const k in VOICE_RANGES){
+    const o=document.createElement("option"); o.value=k;
+    o.textContent=(lang==="en"&&VOICE_RANGES[k].nameEn)?VOICE_RANGES[k].nameEn:VOICE_RANGES[k].name;
+    voiceSel.appendChild(o);
+  }
+  voiceSel.value = v || "bari";
+}
+// 「更多设置」按钮文字随展开状态切换
+const moreSettingsEl=$("moreSettings"), moreSummaryEl=$("moreSummary");
+function updateMoreLbl(){ moreSummaryEl.textContent = moreSettingsEl.open ? t("moreLblOpen") : t("moreLbl"); }
+moreSettingsEl.addEventListener("toggle", updateMoreLbl);
+
+function applyLang(l){
+  lang=l;
+  try{ localStorage.setItem("vpt_lang",l); }catch(e){}
+  document.documentElement.lang=(l==="en")?"en":"zh";
+  langCN.classList.toggle("active", l==="zh");
+  langEN.classList.toggle("active", l==="en");
+  document.querySelectorAll("[data-i18n]").forEach(el=>{ el.textContent=t(el.dataset.i18n); });
+  document.querySelectorAll("[data-i18n-html]").forEach(el=>{ el.innerHTML=t(el.dataset.i18nHtml); });
+  updateMoreLbl();
+  fillPatternSel(); fillVoiceSel();
+  playBtn.textContent = isPlaying ? t("stop") : t("play");
+  micBtn.textContent  = micOn ? t("micInUse") : t("micEnable");
+  if(statusKey) statusEl.textContent=t(statusKey);
+  initHint();
+  updateInfoLabel();
+  draw();
+}
+langCN.onclick=()=>applyLang("zh");
+langEN.onclick=()=>applyLang("en");
 
 // 填充根音下拉 (C2..C5)
 for(let m=36;m<=72;m++){
@@ -325,20 +500,12 @@ for(let m=36;m<=72;m++){
   if(m===48) o.selected=true; // C3
   rootSel.appendChild(o);
 }
-// 填充音型下拉
-for(const k in PATTERNS){
-  const o=document.createElement("option"); o.value=k; o.textContent=PATTERNS[k].name;
-  patternSel.appendChild(o);
-}
-patternSel.value="octave_hold";
-// 填充音域下拉
-for(const k in VOICE_RANGES){
-  const o=document.createElement("option"); o.value=k; o.textContent=VOICE_RANGES[k].name;
-  voiceSel.appendChild(o);
-}
-voiceSel.value="bari";
+fillPatternSel(); patternSel.value="rossini";
+fillVoiceSel();   voiceSel.value="bari";
 let voiceLo=43, voiceHi=65;   // 默认男中音
-function setVoice(){ const r=VOICE_RANGES[voiceSel.value].r; voiceLo=r[0]; voiceHi=r[1]; refreshSeqView(); }
+// 起始音默认 = 所选音域最低安全音 + 三度(4个半音)，随音域联动
+function defaultRoot(){ rootSel.value = String(Math.min(72, Math.max(36, voiceLo+4))); }
+function setVoice(){ const r=VOICE_RANGES[voiceSel.value].r; voiceLo=r[0]; voiceHi=r[1]; defaultRoot(); refreshSeqView(); }
 voiceSel.addEventListener("change", setVoice);
 
 let mode="realtime"; // "realtime" 实时跟唱 | "listen" 先听后唱（随机测试内部用 listen）
@@ -358,7 +525,7 @@ function pickFit(pool, avoid){
     if(rHi>=rLo){
       const root=rLo+Math.floor(Math.random()*(rHi-rLo+1));
       lastPhraseEntry=p;
-      return {root, seq:p.seq, name:p.name, type:p.type, mood:p.mood};
+      return {root, seq:p.seq, name:p.name, nameEn:p.nameEn, type:p.type, mood:p.mood, moodEn:p.moodEn};
     }
   }
   return null;
@@ -371,14 +538,16 @@ function makeRandomPhrase(){
          || pickFit(pool, null);                // 实在只有它能放进音域时才允许重复
   if(r) return r;
   lastPhraseEntry=null;
-  return {root:voiceLo, seq:[0], name:"单音", type:"melody"};   // 兜底
+  return {root:voiceLo, seq:[0], name:"单音", nameEn:"Single note", type:"melody"};   // 兜底
 }
 function newRandomPhrase(){ randPhrase=makeRandomPhrase(); }
 // 随机测试：把曲名/和弦名与色彩透明叠印到参考条上方（不占额外空间）
 function updateInfoLabel(){
   if(randomTest && randPhrase){
-    let s="🎲 "+randPhrase.name;
-    if(randPhrase.type==="chord" && randPhrase.mood) s+=" · "+randPhrase.mood;
+    const nm=(lang==="en"&&randPhrase.nameEn)?randPhrase.nameEn:randPhrase.name;
+    const md=(lang==="en")?randPhrase.moodEn:randPhrase.mood;
+    let s="🎲 "+nm;
+    if(randPhrase.type==="chord" && md) s+=" · "+md;
     infoLabel.textContent=s;
     infoLabel.style.display="block";
   } else infoLabel.style.display="none";
@@ -396,8 +565,9 @@ devPhone.onclick=()=>setDevice("phone");
 
 function resetScoring(){ noteRef=null; noteSamples=0; noteAcc=0; repSum=0; repW=0; repMicFrames=0; repTotalFrames=0; curRepKey=null; }
 
-// 顶层模式：练习模式 / 随机测试
+// 顶层模式：练习模式 / 随机测试（播放中切换 = 全停止，按钮变回闪烁的“播放”）
 function setMainMode(main){
+  if(isPlaying) stopPlay();
   randomTest = (main==="random");
   chipPractice.classList.toggle("active", main==="practice");
   chipRandom.classList.toggle("active", main==="random");
@@ -405,6 +575,7 @@ function setMainMode(main){
   catRow.style.display     = randomTest ? "" : "none";   // 测试范围 仅随机测试
   voiceRow.style.display   = "";                         // 音域：两种模式都先选择，并据此标出超音域的音
   practiceOnly.forEach(el=>el.style.display = randomTest ? "none" : "");  // 起始音/音型/移调 仅练习模式
+  updateTransRows();                                                     // 移调子选项随模式与开关显隐
   resetScoring();
   if(randomTest){ mode="listen"; newRandomPhrase(); }
   else { mode = chipListen.classList.contains("active") ? "listen" : "realtime"; }
@@ -442,15 +613,44 @@ catBoth.onclick=()=>setCat("both");
 chipGuide.onclick=()=>{ showGuide=!showGuide; chipGuide.classList.toggle("active",showGuide); draw(); };
 bpm.oninput=()=>bpmOut.value=bpm.value;
 
-// 向上移调次数（+/- 按钮，默认 0，范围 0–12）
+// 移调两步式：第一步 移调/不移调；第二步 方向(上移/上移+返回/下移/下移+返回)+次数+步长
+let transposeOn=true;   // 默认开启：向上移调6个半音
+let transDir="up";   // "up" | "upback" | "down" | "downback"
+function updateTransRows(){
+  const show = !randomTest && transposeOn;
+  [transDirRow,transCntRow,transStepRow].forEach(el=>el.style.display = show ? "" : "none");
+}
+function setTrans(on){
+  transposeOn=on;
+  transOff.classList.toggle("active", !on);
+  transOn.classList.toggle("active", on);
+  updateTransRows();
+  if(on && upCount<1) setUpCount(1); else refreshSeqView();
+}
+transOff.onclick=()=>setTrans(false);
+transOn.onclick =()=>setTrans(true);
+function setDir(d){
+  transDir=d;
+  dirUp.classList.toggle("active", d==="up");
+  dirUpBack.classList.toggle("active", d==="upback");
+  dirDown.classList.toggle("active", d==="down");
+  dirDownBack.classList.toggle("active", d==="downback");
+  refreshSeqView();
+}
+dirUp.onclick=()=>setDir("up");
+dirUpBack.onclick=()=>setDir("upback");
+dirDown.onclick=()=>setDir("down");
+dirDownBack.onclick=()=>setDir("downback");
+
+// 移调次数（+/- 按钮，移调开启时至少 1，范围至 12）
 let upCount=0;
 const UP_MAX=12;
 function setUpCount(n){
-  upCount=Math.max(0,Math.min(UP_MAX,n));
+  const minN = transposeOn ? 1 : 0;
+  upCount=Math.max(minN,Math.min(UP_MAX,n));
   upOut.value=upCount;
-  upMinus.disabled = upCount<=0;
+  upMinus.disabled = upCount<=minN;
   upPlus.disabled  = upCount>=UP_MAX;
-  stepGroup.classList.toggle("disabled", upCount===0);  // 不移调时灰掉“每次移调”
   refreshSeqView();
 }
 upMinus.onclick=()=>setUpCount(upCount-1);
@@ -470,15 +670,24 @@ stepWholeBtn.onclick=()=>setStep(2);
 /* ============ 构建完整事件序列 ============ */
 // 返回 {events:[{midi,t,dur}], minMidi, maxMidi, total}
 function buildSequence(){
-  let root, seq, ups, st;
+  let root, seq, bases;
   if(randomTest){
     if(!randPhrase) newRandomPhrase();
-    root=randPhrase.root; seq=randPhrase.seq; ups=0; st=1;   // 单个随机乐句（听一遍唱一遍）
+    root=randPhrase.root; seq=randPhrase.seq;
+    bases=[root];                                            // 单个随机乐句（听一遍唱一遍）
   } else {
     root=+rootSel.value;
     const pat=PATTERNS[patternSel.value];
     seq = pat.turn || pat.up;   // 始终播放完整音型（含下行返回）
-    ups = upCount; st=stepSemiVal;
+    if(!transposeOn || upCount===0){ bases=[root]; }
+    else{
+      const sgn = (transDir==="down"||transDir==="downback") ? -1 : 1;   // 上移/下移
+      bases=[];
+      for(let i=0;i<=upCount;i++) bases.push(root + sgn*i*stepSemiVal);
+      if(transDir==="upback"||transDir==="downback"){                    // +返回：原路折回（不重复顶点）
+        for(let i=upCount-1;i>=0;i--) bases.push(root + sgn*i*stepSemiVal);
+      }
+    }
   }
   const beat = 60/(+bpm.value);          // 每拍时长（秒）
   const phraseGap = beat*0.8;            // 转调乐句之间停顿
@@ -487,8 +696,8 @@ function buildSequence(){
   // 每个转调播两遍：实时跟唱=两遍都出声；先听后唱=第1遍出声(听)、第2遍静音(看图自己唱)
   const repsAudible = (mode==="listen") ? [true,false] : [true,true];
   let t=0; const events=[]; let minM=999,maxM=-999;
-  for(let i=0;i<=ups;i++){
-    const base = root + i*st;
+  for(let i=0;i<bases.length;i++){
+    const base = bases[i];
     for(let r=0;r<repsAudible.length;r++){
       const audible=repsAudible[r];
       for(let n=0;n<seq.length;n++){
@@ -510,6 +719,7 @@ function buildSequence(){
 /* ============ 音频 ============ */
 let audioCtx=null, masterGain=null, seqGain=null;
 let isPlaying=false, startTime=0, seqData=null, scheduledStop=0;
+let pausedAt=null;   // 停止时记录进行位置；再播放时续播（更改练习设置则清除）
 let activeOscs=[];   // 已调度但仍在排队/播放的振荡器，停止时逐个关闭
 
 function ensureAudio(){
@@ -606,34 +816,47 @@ function startPlay(){
   seqGain = audioCtx.createGain();      // 每次播放新建“总闸”节点，停止时直接归零
   seqGain.gain.value=1;
   seqGain.connect(masterGain);
-  seqData = buildSequence();
+  // 若上次是中途停止且设置未变 → 从停止位置续播；否则从头开始
+  const resuming = (pausedAt!==null && seqData && pausedAt < seqData.total - 0.05);
+  if(!resuming){ seqData = buildSequence(); roundId=0; }
   updateViewRange();                    // 起播即按当前音型适应音域
   const wave=waveSel.value;
-  startTime = audioCtx.currentTime + 0.12;
+  startTime = audioCtx.currentTime + 0.12 - (resuming ? pausedAt : 0);
+  const nowT = audioCtx.currentTime;
   for(const e of seqData.events){
-    if(e.audible) scheduleNote(e.midi, startTime+e.t, e.dur, wave);  // 静音遍只走图形
+    const when = startTime + e.t;
+    if(e.audible && when > nowT + 0.03) scheduleNote(e.midi, when, e.dur, wave);  // 续播时跳过已过去的音
   }
   scheduledStop = startTime + seqData.total;
+  pausedAt=null;
   isPlaying=true;
-  roundId=0; noteRef=null; noteSamples=0; noteAcc=0;
+  noteRef=null; noteSamples=0; noteAcc=0;
   repSum=0; repW=0; repMicFrames=0; repTotalFrames=0; curRepKey=null;   // 重置评分
   scoreLabel.style.display="none";
-  playBtn.textContent="■ 停止"; playBtn.classList.add("rec");
-  updateInfoLabel();
-  setStatus(randomTest ? "" : "播放中…跟着唱", "ok");
+  playBtn.textContent=t("stop"); playBtn.classList.add("rec"); playBtn.classList.remove("playIdle");
+  updateInfoLabel(); updateReadoutVis();
+  if(randomTest) setStatus("","ok"); else setStatusK("playing","ok");
   loopRAF();
 }
 
 function stopPlay(){
+  // 记录中途停止的位置，便于下次续播（练习已走完或刚开始则不记）
+  if(audioCtx && seqData){
+    const el = audioCtx.currentTime - startTime;
+    pausedAt = (el > 0.1 && el < seqData.total - 0.05) ? el : null;
+  }
   isPlaying=false;
   killAllNotes();                       // 立即静音并销毁所有已调度音符
-  playBtn.textContent="▶︎ 播放"; playBtn.classList.remove("rec");
-  setStatus("");
+  playBtn.textContent=t("play"); playBtn.classList.remove("rec"); playBtn.classList.add("playIdle");
+  setStatus(""); updateReadoutVis();
 }
 
 playBtn.onclick=()=>{ isPlaying?stopPlay():startPlay(); };
 
-function setStatus(msg,cls){ statusEl.textContent=msg; statusEl.className=cls||""; }
+function setStatus(msg,cls){ statusKey=null; statusEl.textContent=msg; statusEl.className=cls||""; }
+function setStatusK(key,cls){ statusKey=key; statusEl.textContent=t(key); statusEl.className=cls||""; }   // 可随语言切换刷新
+// 标准音/收音/准确度一行：空闲时隐藏，播放或开麦时才显示
+function updateReadoutVis(){ document.getElementById("readout").style.display = (isPlaying||micOn) ? "" : "none"; }
 
 /* ============ 麦克风 + 音高检测 ============ */
 let micOn=false, analyser=null, micStream=null, floatBuf=null, micGainNode=null;
@@ -664,25 +887,26 @@ micBtn.onclick=async()=>{
     // iOS 开录音后常把音频上下文挂起/改路由→主动重新唤醒，尽量找回播放声音
     try{ await audioCtx.resume(); }catch(e){}
     setTimeout(()=>{ if(audioCtx && audioCtx.state!=="running") audioCtx.resume().catch(()=>{}); }, 300);
-    micOn=true; micBtn.classList.add("on"); micBtn.textContent="🎤 麦克风使用中";
-    setStatus("麦克风已开 — 唱一个长音试试","ok");
+    micOn=true; micBtn.classList.add("on"); micBtn.classList.remove("micIdle"); micBtn.textContent=t("micInUse");
+    setStatusK("micOpened","ok"); updateReadoutVis();
     loopRAF();
   }catch(err){
     micOn=false; micBtn.classList.remove("on");
     if(location.protocol==="file:"){
-      setStatus("麦克风不可用：iOS 不允许本地文件(file://)访问麦克风，请用 HTTPS 网址打开（见下方说明）","err");
+      setStatus(t("micErrFile"),"err");
     }else{
-      setStatus("无法访问麦克风："+err.name+" — 请在 Safari 设置中允许麦克风权限","err");
+      setStatus(t("micErrPerm")+err.name+t("micErrPerm2"),"err");
     }
   }
 };
 
 function stopMic(){
-  micOn=false; micBtn.classList.remove("on"); micBtn.textContent="🎤 点击启用麦克风";
-  if(micStream){ micStream.getTracks().forEach(t=>t.stop()); micStream=null; }
+  micOn=false; micBtn.classList.remove("on"); micBtn.classList.add("micIdle"); micBtn.textContent=t("micEnable");
+  if(micStream){ micStream.getTracks().forEach(tr=>tr.stop()); micStream=null; }
   analyser=null; pitchHistory=[];
   noteNameEl.textContent="—"; centsBadge.textContent="—"; centsBadge.style.background="#222b36"; centsBadge.style.color="var(--muted)";
-  setStatus(isPlaying?"播放中…":"已停止");
+  if(isPlaying) setStatusK("playing"); else setStatus("");
+  updateReadoutVis();
 }
 
 // 自相关音高检测 (ACF2+ 简化版)
@@ -807,9 +1031,9 @@ function draw(){
     for(const e of seqData.events){ if(elapsed>=e.t && elapsed<=e.t+e.dur){cur=e;break;} }
     if(cur){
       refNoteEl.textContent=midiToName(cur.midi);   // 标准音 = 当前参考条音高
-      if(cur.audible){ phaseLabel.textContent = (mode==="listen")?"🔊 先听":"🔊 跟唱";
+      if(cur.audible){ phaseLabel.textContent = (mode==="listen")?t("phListen"):t("phFollow");
         phaseLabel.style.color="#4cc2ff"; }
-      else { phaseLabel.textContent="🎤 该你唱"; phaseLabel.style.color="#ffd166"; }
+      else { phaseLabel.textContent=t("phYourTurn"); phaseLabel.style.color="#ffd166"; }
       phaseLabel.style.display="block";
       rangeWarn.style.display = (cur.midi<voiceLo||cur.midi>voiceHi) ? "block" : "none";  // 超音域提示
     } else { refNoteEl.textContent="—"; }   // 音符/乐句间停顿：标准音留空，但相位提示保持不闪烁
@@ -874,7 +1098,7 @@ function finalizeRep(){
   repSum=0; repW=0; repMicFrames=0; repTotalFrames=0;
 }
 function showScore(sc){
-  scoreLabel.innerHTML='<div class="scoreCap">得分</div><div class="scoreBig">'+sc+'<span class="scoreUnit">分</span></div>';
+  scoreLabel.innerHTML='<div class="scoreCap">'+t("scoreCap")+'</div><div class="scoreBig">'+sc+'<span class="scoreUnit">'+t("pts")+'</span></div>';
   scoreLabel.style.color = sc>=90?"#3fb950":sc>=75?"#e0b020":sc>=60?"#ff9f43":"#f85149";
   scoreLabel.style.display="block";
   clearTimeout(scoreHideTimer);
@@ -931,9 +1155,9 @@ function loopRAF(){
           const ac=Math.abs(cents);
           noteNameEl.textContent=midiToName(nearest);
           let label,bg,col;
-          if(ac<=22){ label="准"; bg="#193d22"; col="#3fb950"; }          // 音准（范围略放宽）
+          if(ac<=22){ label=t("inTune"); bg="#193d22"; col="#3fb950"; }   // 音准（范围略放宽）
           else{
-            label = cents>0 ? "太高" : "太低";
+            label = cents>0 ? t("sharp") : t("flat");
             if(ac<=38){ bg="#3b3416"; col="#e0b020"; }                    // 轻微（黄）
             else if(ac<=60){ bg="#3d2a12"; col="#ff9f43"; }               // 较多（橙）
             else{ bg="#3d1c1c"; col="#f85149"; }                          // 严重（红）
@@ -950,7 +1174,7 @@ function loopRAF(){
         }
       }
     }
-    // 整条练习走完后自动循环：回到原调从头开始（向上移调次数为0时即反复练当前调）
+    // 整条练习走完后自动循环：回到起点从头开始（不移调时即反复练当前调）
     if(isPlaying && audioCtx && audioCtx.currentTime>scheduledStop){
       finalizeRep();                  // 结算最后一条音阶
       curRepKey=null; roundId++;
@@ -986,8 +1210,9 @@ function scheduleAllFromNow(){
   repSum=0; repW=0; repMicFrames=0; repTotalFrames=0; curRepKey=null;   // 换型/重排重置评分
 }
 
-// 音型/根音/速度/移调 改变：重建序列并自适应纵向音域；若正在播放则无缝从新音型开头继续
+// 音型/根音/速度/移调/模式等设置改变：重建序列并自适应纵向音域；同时作废续播位置
 function refreshSeqView(){
+  pausedAt=null;                   // 更改了练习设置 → 下次播放从头开始
   seqData=buildSequence();
   updateViewRange();               // 自动适应新音型的最高/最低音，参考条不再被裁掉
   if(isPlaying && audioCtx) scheduleAllFromNow();
@@ -998,24 +1223,24 @@ function refreshSeqView(){
 /* ============ 初始 ============ */
 function initHint(){
   if(location.protocol==="file:"){
-    micHint.innerHTML="⚠️ 你正用本地文件打开：演奏与画图可用，但 <b>iOS 不允许 file:// 访问麦克风</b>。把本文件传到免费 HTTPS（见上方「关于」），用 Safari 打开网址后麦克风即可用。";
-    micHint.style.color="var(--warn)";
+    micHint.style.display=""; micHint.innerHTML=t("hintFile"); micHint.style.color="var(--warn)";
   }else if(window.isSecureContext){
-    micHint.innerHTML="✅ 安全上下文 (HTTPS)：麦克风可用。点「麦克风」授权后开始练。";
-    micHint.style.color="var(--good)";
+    micHint.style.display="none";   // 一切正常时不显示提示，简化界面
   }else{
-    micHint.innerHTML="⚠️ 当前非 HTTPS，麦克风可能被拒绝。请用 https:// 网址打开。";
-    micHint.style.color="var(--warn)";
+    micHint.style.display=""; micHint.innerHTML=t("hintNoHttps"); micHint.style.color="var(--warn)";
   }
 }
 // 全屏(添加到主屏幕)模式：加 standalone 类，给顶部留足空间避开灵动岛
 if(navigator.standalone || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches)){
   document.body.classList.add("standalone");
 }
-bpmOut.value=bpm.value; setUpCount(0); setStep(1);
+bpmOut.value=bpm.value; defaultRoot(); setUpCount(6); setStep(1);   // 默认：起始音=音域最低+三度；上移6个半音
 initHint();
 resizeCanvas();
 setMainMode("practice");   // 默认练习模式：展开练习方式与练习控件，构建序列并绘制
+applyLang(lang);           // 应用语言（含记忆的选择），刷新所有界面文字
+setStatusK("statusInit");
+updateReadoutVis();        // 空闲时隐藏读数行
 </script>
 </body>
 </html>
