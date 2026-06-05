@@ -1134,8 +1134,12 @@ function loopRAF(){
         repTotalFrames++;                                      // 本遍音符时长（帧）
         if(hasMic){
           repMicFrames++;                                      // 其中检测到发声的帧
-          noteSamples++;
-          if(Math.abs(midi-curEv.midi)*100 <= 30) noteAcc++;   // 落在“准”范围（放宽到±30音分）
+          // 起音宽限：音开始后的前0.18秒（或音长30%，取小者）不计入评分，只评稳定段
+          const inNote = elapsed - curEv.t;
+          if(inNote > Math.min(0.18, curEv.dur*0.3)){
+            noteSamples++;
+            if(Math.abs(midi-curEv.midi)*100 <= 30) noteAcc++; // 落在“准”范围（±30音分）
+          }
         }
       } else { closeNote(); }
     }
