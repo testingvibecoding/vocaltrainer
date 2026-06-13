@@ -253,8 +253,8 @@
     <div style="margin-top:10px;">
       <label data-i18n="timbreLbl">音色</label>
       <select id="waveSel">
-        <option value="piano" selected data-i18n="optPiano">钢琴</option>
-        <option value="violin" data-i18n="optElec">电子</option>
+        <option value="piano" selected data-i18n="optSynth">合成器</option>
+        <option value="samplepiano" data-i18n="optPianoSample">钢琴(采样·需下载)</option>
       </select>
     </div>
     <div style="margin-top:10px;">
@@ -402,7 +402,8 @@ const I18N = {
     transLbl:"移调", transOffTxt:"不移调", transOnTxt:"移调",
     dirLbl:"移调方式", dirUpTxt:"上移", dirUpBackTxt:"上移+返回", dirDownTxt:"下移", dirDownBackTxt:"下移+返回",
     cntLbl:"移调次数", stepLbl:"每次移调", stepSemiTxt:"半音", stepWholeTxt:"全音",
-    tempoLbl:"速度", timbreLbl:"音色", optPiano:"钢琴", optElec:"电子",
+    tempoLbl:"速度", timbreLbl:"音色", optSynth:"合成器", optPianoSample:"钢琴(采样·需下载)",
+    dlSamples:"正在下载钢琴采样…", dlDone:"钢琴采样已就绪", dlFail:"采样下载失败，已回退合成器",
     dispLbl:"显示", guideTxt:"显示参考条", moreLbl:"⚙ 更多设置", moreLblOpen:"收起更多设置",
     aboutSummary:"关于音准检测与离线使用",
     aboutBody:"背景的彩色横条是参考音高（piano-roll）。开启麦克风后，你跟唱的实时音高会以亮色曲线叠加在上面——曲线压在横条中线说明音准。上方显示标准音、收音音名与准确度。<br><br>iOS Safari 出于安全要求，麦克风只能在 <b>HTTPS 网址</b> 下使用。如果你是用「文件」App 直接打开本文件（file://），播放和画图正常，但麦克风会被拒绝。把本文件传到一个免费 HTTPS 托管后，用 Safari 打开网址即可，加载后可离线、可「添加到主屏幕」当 App 用。",
@@ -434,7 +435,8 @@ const I18N = {
     transLbl:"Transpose", transOffTxt:"Off", transOnTxt:"On",
     dirLbl:"Direction", dirUpTxt:"Up", dirUpBackTxt:"Up + return", dirDownTxt:"Down", dirDownBackTxt:"Down + return",
     cntLbl:"Steps", stepLbl:"Step size", stepSemiTxt:"Semitone", stepWholeTxt:"Whole tone",
-    tempoLbl:"Tempo", timbreLbl:"Timbre", optPiano:"Piano", optElec:"Electronic",
+    tempoLbl:"Tempo", timbreLbl:"Timbre", optSynth:"Synthesizer", optPianoSample:"Piano (sampled · download)",
+    dlSamples:"Downloading piano samples…", dlDone:"Piano samples ready", dlFail:"Sample download failed, using synth",
     dispLbl:"Display", guideTxt:"Show guide bars", moreLbl:"⚙ More settings", moreLblOpen:"Collapse settings",
     aboutSummary:"About pitch detection & offline use",
     aboutBody:"The colored bars are the reference pitches (piano-roll). With the mic on, your sung pitch is drawn as a bright curve on top — keeping the curve on a bar's center line means you are in tune. The target note, detected note and accuracy are shown above.<br><br>For security, iOS Safari only allows the microphone on <b>HTTPS pages</b>. If you open this file directly (file://), playback and graphics work but the mic is blocked. Host it on any free HTTPS service and open the URL in Safari — it then works offline and can be added to the Home Screen.",
@@ -614,6 +616,8 @@ catBoth.onclick=()=>setCat("both");
 
 chipGuide.onclick=()=>{ showGuide=!showGuide; chipGuide.classList.toggle("active",showGuide); draw(); };
 bpm.oninput=()=>bpmOut.value=bpm.value;
+// 选择“钢琴(采样)”时开始下载采样（首次需联网，之后浏览器缓存可离线）
+waveSel.addEventListener("change",()=>{ if(waveSel.value==="samplepiano") loadPianoSamples(); });
 
 // 移调两步式：第一步 移调/不移调；第二步 方向(上移/上移+返回/下移/下移+返回)+次数+步长
 let transposeOn=true;   // 默认开启：向上移调6个半音
@@ -753,7 +757,52 @@ function getWave(name,harmonics){
   }catch(e){ w=null; }                           // 失败则回退到内置波形
   waveCache[name]=w; return w;
 }
+/* ============ 钢琴采样（从 CDN 下载真实钢琴单音，按音高变速播放）============ */
+const SAMPLE_BASE="https://cdn.jsdelivr.net/gh/gleitz/midi-js-soundfonts/FluidR3_GM/acoustic_grand_piano-mp3/";
+const SAMPLE_NOTES=["C2","F2","A2","C3","F3","A3","C4","F4","A4","C5","F5","A5","C6","F6","A6"];
+let sampleBuffers=null, samplesReady=false, samplesLoading=false;
+function nameToMidiNum(n){
+  const m=n.match(/^([A-G])(#?)(-?\d+)$/); if(!m) return 60;
+  const base={C:0,D:2,E:4,F:5,G:7,A:9,B:11}[m[1]];
+  return base+(m[2]?1:0)+(parseInt(m[3],10)+1)*12;   // C4=60
+}
+async function loadPianoSamples(){
+  if(samplesReady||samplesLoading) return;
+  samplesLoading=true; ensureAudio();
+  setStatus(t("dlSamples"),"ok");
+  const out=[];
+  await Promise.all(SAMPLE_NOTES.map(async n=>{
+    try{
+      const resp=await fetch(SAMPLE_BASE+n+".mp3");
+      const arr=await resp.arrayBuffer();
+      const buf=await audioCtx.decodeAudioData(arr);
+      out.push({midi:nameToMidiNum(n), buf});
+    }catch(e){}
+  }));
+  out.sort((a,b)=>a.midi-b.midi);
+  sampleBuffers=out; samplesReady=out.length>0; samplesLoading=false;
+  setStatus(samplesReady ? t("dlDone") : t("dlFail"), samplesReady?"ok":"err");
+  if(!isPlaying) setTimeout(()=>{ if(!isPlaying){ if(micOn) setStatusK("micOpened"); else setStatus(""); } }, 1500);
+}
+function scheduleNoteSample(midi, when, dur){
+  let best=sampleBuffers[0];
+  for(const s of sampleBuffers) if(Math.abs(s.midi-midi)<Math.abs(best.midi-midi)) best=s;
+  const src=audioCtx.createBufferSource();
+  src.buffer=best.buf;
+  src.playbackRate.value=Math.pow(2,(midi-best.midi)/12);
+  const g=audioCtx.createGain();
+  const r=Math.min(0.12,dur*0.3);
+  g.gain.setValueAtTime(1, when);
+  g.gain.setValueAtTime(1, when+Math.max(0.02,dur-r));
+  g.gain.exponentialRampToValueAtTime(0.0001, when+dur);   // 收尾，避免叠音
+  src.connect(g); g.connect(seqGain);
+  src.start(when); src.stop(when+dur+0.1);
+  const item={osc:src,t0:when,t1:when+dur};
+  activeOscs.push(item);
+  src.onended=()=>{ const i=activeOscs.indexOf(item); if(i>=0) activeOscs.splice(i,1); };
+}
 function scheduleNote(midi, when, dur, inst){
+  if(inst==="samplepiano" && samplesReady){ scheduleNoteSample(midi,when,dur); return; }  // 采样未就绪则回退合成
   const cfg=INSTRUMENTS[inst]||INSTRUMENTS.piano;
   const osc=audioCtx.createOscillator();
   const g=audioCtx.createGain();
